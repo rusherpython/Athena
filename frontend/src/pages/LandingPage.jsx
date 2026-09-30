@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ChevronDown, Star, ArrowRight, Brain, Sparkles } from 'lucide-react';
+import { ChevronDown, ArrowRight, Brain, Sparkles } from 'lucide-react';
 import CanvasScrollSequence from '../components/landing/CanvasScrollSequence';
 import LogoMarqueeSection from '../components/landing/LogoMarqueeSection';
 import BentoGridSection from '../components/landing/BentoGridSection';
@@ -57,13 +57,14 @@ export default function LandingPage() {
           {/* ============================================================ */}
           {/* 3. HERO UI CONTENT OVERLAY                                   */}
           {/* ============================================================ */}
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2 flex-1 flex flex-col justify-between">
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-6 sm:pt-8 pb-3 flex-1 flex flex-col justify-between">
             {/* TOP NAVIGATION BAR */}
             <header className="w-full flex items-center justify-between py-2">
               {/* Brand Name: ATHENA */}
               <Link
                 to="/"
-                className="text-white text-base sm:text-lg font-medium tracking-[0.28em] hover:text-purple-200 transition-colors uppercase select-none"
+                className="shrink-0 inline-flex items-center pl-1 sm:pl-2 pr-2 py-1 text-white text-base sm:text-lg font-medium tracking-[0.24em] sm:tracking-[0.28em] hover:text-purple-200 transition-colors uppercase select-none"
+                style={{ textRendering: 'optimizeLegibility' }}
               >
                 ATHENA
               </Link>
@@ -139,22 +140,6 @@ export default function LandingPage() {
                   <Brain className="w-4 h-4 text-purple-700" />
                   <span>Launch Your Twin</span>
                 </button>
-              </div>
-
-              {/* Reviews & Social Proof */}
-              <div className="mt-6 sm:mt-7 flex items-center justify-center gap-3 sm:gap-4 text-xs sm:text-[13px] text-neutral-300 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                <span className="font-light tracking-wide">Reviews 1,042</span>
-                <div className="flex items-center gap-1.5" aria-label="Rated 5 out of 5 stars">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <div
-                      key={star}
-                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-[4px] bg-[#ea580c] flex items-center justify-center shadow-sm"
-                    >
-                      <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white fill-white" />
-                    </div>
-                  ))}
-                </div>
-                <span className="font-light tracking-wide text-neutral-200">Excellent Score</span>
               </div>
             </div>
 
