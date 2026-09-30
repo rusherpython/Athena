@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { wellnessApi } from '../api/wellnessApi';
 import { useNotification } from '../contexts/NotificationContext';
-import { Heart, Moon, Dumbbell, Info, AlertCircle } from 'lucide-react';
-import ProgressBar from '../components/ui/ProgressBar';
+import { Heart, Moon, Dumbbell, Info, Pill } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 export default function WellnessPage() {
@@ -14,9 +13,18 @@ export default function WellnessPage() {
 
   useEffect(() => {
     const load = async () => {
-      try { setWellness(await wellnessApi.getWellness()); }
-      catch { addToast({ title: 'Load error', type: 'error' }); }
-      finally { setLoading(false); }
+      try {
+        const data = await wellnessApi.getWellness();
+        setWellness(data);
+        const h = data?.bmi?.height || data?.height;
+        const w = data?.bmi?.weight || data?.weight;
+        if (h) setBmiHeight(String(h));
+        if (w) setBmiWeight(String(w));
+      } catch (err) {
+        addToast({ title: 'Load error', message: 'Could not load wellness details', type: 'error' });
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);
@@ -45,7 +53,7 @@ export default function WellnessPage() {
           </div>
           <div>
             <h1 style={{ color: '#f1f5f9', fontSize: 24, fontWeight: 800 }}>Wellness</h1>
-            <p style={{ color: '#64748b', fontSize: 13 }}>Sleep · Workout · BMI · Period tracking</p>
+            <p style={{ color: '#64748b', fontSize: 13 }}>Sleep · Workout · BMI · Period tracking · Health Profile</p>
           </div>
         </div>
       </div>
@@ -109,7 +117,7 @@ export default function WellnessPage() {
                 </div>
               ) : null)}
             </div>
-          ) : <p style={{ color: '#475569', fontSize: 13 }}>No workout data. Update in Settings.</p>}
+          ) : <p style={{ color: '#475569', fontSize: 13 }}>No workout data configured.</p>}
         </div>
 
         {/* BMI */}
@@ -136,17 +144,68 @@ export default function WellnessPage() {
               <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.2)' }}>
                 <p style={{ color: '#64748b', fontSize: 11 }}>ESTIMATED NEXT PERIOD</p>
                 <p style={{ color: '#f9a8d4', fontWeight: 700, fontSize: 16 }}>{wellness.periodTracking.nextEstimated || 'Calculating...'}</p>
-                <p style={{ color: '#475569', fontSize: 11, marginTop: 4 }}>Based on your average cycle length</p>
+                <p style={{ color: '#475569', fontSize: 11, marginTop: 4 }}>Based on your average cycle length ({wellness.periodTracking.averageCycleLength || 28} days)</p>
               </div>
+              {wellness.periodTracking.symptoms && wellness.periodTracking.symptoms.length > 0 && (
+                <div>
+                  <p style={{ color: '#64748b', fontSize: 11, marginBottom: 4 }}>RECORDED SYMPTOMS</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {wellness.periodTracking.symptoms.map((s) => (
+                      <span key={s} style={{ padding: '3px 8px', borderRadius: 100, fontSize: 11, background: 'rgba(236,72,153,0.15)', color: '#f9a8d4', border: '1px solid rgba(236,72,153,0.3)' }}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <p style={{ color: '#64748b', fontSize: 11 }}>This is an estimate only and not a medical prediction.</p>
             </div>
           ) : (
             <div>
-              <p style={{ color: '#64748b', fontSize: 13, marginBottom: 12 }}>Period tracking is not enabled. Enable it for cycle reminders and wellness support.</p>
-              <p style={{ color: '#475569', fontSize: 12 }}>Enable in Settings → Wellness to activate period tracking.</p>
+              <p style={{ color: '#64748b', fontSize: 13, marginBottom: 12 }}>Period tracking is not enabled.</p>
+              <p style={{ color: '#475569', fontSize: 12 }}>You can enable it to activate cycle reminders and wellness support.</p>
             </div>
           )}
         </div>
+
+        {/* Health Profile & Medicines */}
+        {(wellness?.healthConditions || wellness?.allergies || (wellness?.medicines && wellness.medicines.length > 0)) && (
+          <div className="glass-card" style={{ padding: 22, gridColumn: '1 / -1' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <Pill size={18} color="#a855f7" />
+              <h2 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 700 }}>Health Profile & Medicines</h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14 }}>
+              {wellness.healthConditions && (
+                <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Health Conditions</p>
+                  <p style={{ color: '#f1f5f9', fontSize: 13, lineHeight: 1.5 }}>{wellness.healthConditions}</p>
+                </div>
+              )}
+              {wellness.allergies && (
+                <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>Allergies</p>
+                  <p style={{ color: '#f1f5f9', fontSize: 13, lineHeight: 1.5 }}>{wellness.allergies}</p>
+                </div>
+              )}
+            </div>
+
+            {wellness.medicines && wellness.medicines.length > 0 && (
+              <div style={{ marginTop: 14 }}>
+                <p style={{ color: '#64748b', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>Configured Medicines & Reminders</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
+                  {wellness.medicines.map((m, idx) => (
+                    <div key={m.id || idx} style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.18)' }}>
+                      <p style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 600 }}>{m.name}</p>
+                      <p style={{ color: '#d8b4fe', fontSize: 12, marginTop: 2 }}>{[m.dosage, m.frequency, m.time].filter(Boolean).join(' · ')}</p>
+                      {m.notes && <p style={{ color: '#94a3b8', fontSize: 11, marginTop: 4 }}>Note: {m.notes}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

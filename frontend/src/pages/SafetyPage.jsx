@@ -157,10 +157,10 @@ export default function SafetyPage() {
             <p style={{ color: '#475569', fontSize: 13 }}>No contacts added. Add up to 3 emergency contacts.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {contacts.map((c) => (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10, background: 'rgba(220,38,38,0.05)', border: '1px solid rgba(220,38,38,0.15)' }}>
+              {contacts.map((c, idx) => (
+                <div key={c.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10, background: 'rgba(220,38,38,0.05)', border: '1px solid rgba(220,38,38,0.15)' }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(220,38,38,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                    {c.name[0].toUpperCase()}
+                    {(c.name?.[0] || 'C').toUpperCase()}
                   </div>
                   <div style={{ flex: 1 }}>
                     <p style={{ color: '#f1f5f9', fontWeight: 600, fontSize: 14 }}>{c.name}</p>

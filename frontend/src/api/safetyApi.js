@@ -14,7 +14,8 @@ export const safetyApi = {
   async getContacts() {
     if (DEMO_MODE) { await delay(400); return localContacts; }
     const res = await apiClient.get(API_ENDPOINTS.safety.contacts);
-    return res.data;
+    const data = res.data;
+    return Array.isArray(data) ? data : (data?.contacts || []);
   },
 
   async updateContacts(contacts) {

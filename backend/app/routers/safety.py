@@ -7,6 +7,7 @@ from app.services.safety_service import (
     get_emergency_contacts,
     update_emergency_contact,
     delete_emergency_contact,
+    update_emergency_contacts_bulk,
     get_safety_config,
     update_safety_config,
 )
@@ -22,11 +23,23 @@ router = APIRouter(
 # ---------------------------------------------------------
 
 @router.post("/contacts")
-def add_emergency_contact(
+@router.put("/contacts")
+def save_or_update_contacts(
     data: dict,
     user=Depends(get_current_user),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
+    token = credentials.credentials if credentials else None
+
+    # Check if a bulk list of contacts was submitted: { contacts: [...] }
+    if "contacts" in data and isinstance(data["contacts"], list):
+        return update_emergency_contacts_bulk(
+            user_id=user.id,
+            contacts_list=data["contacts"],
+            token=token,
+        )
+
+    # Otherwise it's a single contact addition: { name, phone, relationship, priority }
     name = data.get("name")
     phone = data.get("phone")
 
@@ -47,7 +60,7 @@ def add_emergency_contact(
         phone=phone,
         relationship=data.get("relationship"),
         priority=data.get("priority", 1),
-        token=credentials.credentials,
+        token=token,
     )
 
 
@@ -58,7 +71,7 @@ def list_emergency_contacts(
 ):
     return get_emergency_contacts(
         user_id=user.id,
-        token=credentials.credentials,
+        token=credentials.credentials if credentials else None,
     )
 
 
@@ -73,7 +86,7 @@ def edit_emergency_contact(
         contact_id=contact_id,
         user_id=user.id,
         updates=data,
-        token=credentials.credentials,
+        token=credentials.credentials if credentials else None,
     )
 
 
@@ -86,7 +99,7 @@ def remove_emergency_contact(
     return delete_emergency_contact(
         contact_id=contact_id,
         user_id=user.id,
-        token=credentials.credentials,
+        token=credentials.credentials if credentials else None,
     )
 
 
@@ -101,11 +114,12 @@ def get_config(
 ):
     return get_safety_config(
         user_id=user.id,
-        token=credentials.credentials,
+        token=credentials.credentials if credentials else None,
     )
 
 
 @router.patch("/config")
+@router.put("/config")
 def update_config(
     data: dict,
     user=Depends(get_current_user),
@@ -114,5 +128,5 @@ def update_config(
     return update_safety_config(
         user_id=user.id,
         updates=data,
-        token=credentials.credentials,
+        token=credentials.credentials if credentials else None,
     )

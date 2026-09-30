@@ -86,6 +86,14 @@ def save_onboarding(
             "wakeTime": data.get("wakeTime", ""),
             "sleepQuality": data.get("sleepQuality", ""),
         },
+        "safety": {
+            "emergencyContacts": data.get("emergencyContacts", []),
+            "sosSettings": data.get("sosSettings", {
+                "autoEscalation": False,
+                "timeout": 60,
+                "escalationMethod": "both",
+            }),
+        },
         "integrations": {
             "spotifyUsername": data.get("spotifyUsername", ""),
             "spotifyConnect": bool(data.get("spotifyConnect", False)),
@@ -139,19 +147,30 @@ def save_onboarding(
 
     # Save emergency contacts if present
     emergency_contacts = data.get("emergencyContacts", [])
-    if isinstance(emergency_contacts, list):
-        for contact in emergency_contacts:
+    if isinstance(emergency_contacts, list) and len(emergency_contacts) > 0:
+        for idx, contact in enumerate(emergency_contacts):
             if isinstance(contact, dict) and contact.get("name"):
                 try:
                     client.table("emergency_contacts").insert({
                         "user_id": user_id,
-                        "name": contact.get("name"),
-                        "phone": contact.get("phone", ""),
-                        "relationship": contact.get("relationship", ""),
-                        "priority": safe_int(contact.get("priority")) or 1,
+                        "name": str(contact.get("name")).strip(),
+                        "phone": str(contact.get("phone", "")).strip(),
+                        "relationship": str(contact.get("relationship", "Friend")).strip(),
+                        "priority": safe_int(contact.get("priority")) or (idx + 1),
                     }).execute()
-                except Exception:
-                    pass
+                except Exception as ex:
+                    print(f"Failed to insert emergency contact into table: {ex}")
+
+    # Save safety_config if present
+    sos_settings = data.get("sosSettings", {})
+    if isinstance(sos_settings, dict):
+        try:
+            client.table("safety_config").upsert({
+                "user_id": user_id,
+                "sos_enabled": bool(sos_settings.get("autoEscalation", False)),
+            }).execute()
+        except Exception as ex:
+            print(f"Failed to upsert safety_config: {ex}")
 
     # Save tasks if present
     initial_tasks = data.get("tasks", [])
