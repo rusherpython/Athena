@@ -14,10 +14,79 @@ const MOODS = [
 const SOCIAL = ['Instagram', 'YouTube', 'WhatsApp', 'Snapchat', 'X (Twitter)', 'Reddit', 'TikTok'];
 const DIETARY = ['Vegetarian', 'Non-vegetarian', 'Vegan', 'Pescatarian', 'Other', 'Prefer not to say'];
 
+function TagList({ field, label, items, onAdd, onRemove }) {
+  const [val, setVal] = useState('');
+
+  const handleAdd = () => {
+    const trimmed = val.trim();
+    if (trimmed && !(items || []).includes(trimmed)) {
+      onAdd(field, trimmed);
+      setVal('');
+    }
+  };
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <label className="athena-label" htmlFor={`input-${field}`}>{label}</label>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
+        {(items || []).map((item) => (
+          <span
+            key={item}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '4px 10px',
+              borderRadius: 100,
+              background: 'rgba(220,38,38,0.1)',
+              border: '1px solid rgba(220,38,38,0.25)',
+              color: '#f87171',
+              fontSize: 12,
+            }}
+          >
+            {item}
+            <button
+              type="button"
+              onClick={() => onRemove(field, item)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', padding: 0, display: 'flex' }}
+            >
+              <X size={10} />
+            </button>
+          </span>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          id={`input-${field}`}
+          name={`input-${field}`}
+          className="athena-input"
+          placeholder={`Add ${label.toLowerCase()}...`}
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleAdd();
+            }
+          }}
+          style={{ flex: 1 }}
+        />
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="athena-btn-secondary"
+          style={{ padding: '10px 14px', flexShrink: 0 }}
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function OnboardingLifestyle() {
   const { data, updateData } = useOnboarding();
   const navigate = useNavigate();
-  const [foodInput, setFoodInput] = useState('');
   const [activeMood, setActiveMood] = useState('bored');
 
   const toggleMoodOption = (mood, option) => {
@@ -26,11 +95,8 @@ export default function OnboardingLifestyle() {
     updateData({ moodPreferences: { ...data.moodPreferences, [mood]: updated } });
   };
 
-  const addFood = (field) => {
-    if (foodInput.trim()) {
-      updateData({ [field]: [...(data[field] || []), foodInput.trim()] });
-      setFoodInput('');
-    }
+  const addFood = (field, item) => {
+    updateData({ [field]: [...(data[field] || []), item] });
   };
 
   const removeItem = (field, item) => {
@@ -43,24 +109,6 @@ export default function OnboardingLifestyle() {
       : [...data.socialMediaPlatforms, platform];
     updateData({ socialMediaPlatforms: platforms });
   };
-
-  const TagList = ({ field, label }) => (
-    <div style={{ marginBottom: 16 }}>
-      <label className="athena-label">{label}</label>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
-        {(data[field] || []).map((item) => (
-          <span key={item} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 100, background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.25)', color: '#f87171', fontSize: 12 }}>
-            {item}
-            <button onClick={() => removeItem(field, item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', padding: 0, display: 'flex' }}><X size={10} /></button>
-          </span>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input className="athena-input" placeholder={`Add ${label.toLowerCase()}...`} value={foodInput} onChange={(e) => setFoodInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addFood(field)} style={{ flex: 1 }} />
-        <button onClick={() => addFood(field)} className="athena-btn-secondary" style={{ padding: '10px 14px', flexShrink: 0 }}><Plus size={14} /></button>
-      </div>
-    </div>
-  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -77,11 +125,11 @@ export default function OnboardingLifestyle() {
       {/* Food preferences */}
       <div className="glass-card" style={{ padding: 24 }}>
         <h3 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 700, marginBottom: 16 }}>🍕 Food Preferences</h3>
-        <TagList field="favoriteFoods" label="Favorite Foods" />
-        <TagList field="favoriteCuisines" label="Favorite Cuisines" />
-        <TagList field="favoriteSnacks" label="Favorite Snacks" />
-        <TagList field="favoriteDrinks" label="Favorite Drinks" />
-        <TagList field="dislikedFoods" label="Foods You Dislike" />
+        <TagList field="favoriteFoods" label="Favorite Foods" items={data.favoriteFoods} onAdd={addFood} onRemove={removeItem} />
+        <TagList field="favoriteCuisines" label="Favorite Cuisines" items={data.favoriteCuisines} onAdd={addFood} onRemove={removeItem} />
+        <TagList field="favoriteSnacks" label="Favorite Snacks" items={data.favoriteSnacks} onAdd={addFood} onRemove={removeItem} />
+        <TagList field="favoriteDrinks" label="Favorite Drinks" items={data.favoriteDrinks} onAdd={addFood} onRemove={removeItem} />
+        <TagList field="dislikedFoods" label="Foods You Dislike" items={data.dislikedFoods} onAdd={addFood} onRemove={removeItem} />
 
         <div>
           <label className="athena-label">Dietary preference</label>
