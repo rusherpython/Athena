@@ -36,7 +36,22 @@ export default function OnboardingPermissions() {
       setDone(true);
       setTimeout(() => navigate('/dashboard'), 1800);
     } catch (err) {
-      addToast({ title: 'Setup error', message: 'Could not save your profile. Please try again.', type: 'error' });
+      const data = err?.response?.data;
+      let errorMsg = '';
+      if (typeof data?.detail === 'string') {
+        errorMsg = data.detail;
+      } else if (Array.isArray(data?.detail)) {
+        errorMsg = data.detail.map((d) => d.msg || d.message).join(', ');
+      } else if (data?.message) {
+        errorMsg = data.message;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      addToast({
+        title: 'Setup notice',
+        message: errorMsg || 'Could not save your profile. Please try again.',
+        type: 'error',
+      });
     } finally {
       setLoading(false);
     }

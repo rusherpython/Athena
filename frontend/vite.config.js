@@ -15,6 +15,16 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/user': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/profile': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
       '/chat': {
         target: 'http://localhost:8000',
         changeOrigin: true,

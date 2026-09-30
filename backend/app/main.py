@@ -7,6 +7,7 @@ from app.routers.wellness import router as wellness_router
 from app.routers.safety import router as safety_router
 from app.routers.lifestyle import router as lifestyle_router
 from app.routers.reminders import router as reminders_router
+from app.routers.profile import router as profile_router, profile_alias_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,6 +28,10 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(auth.router, prefix="/api")
+app.include_router(profile_router)
+app.include_router(profile_router, prefix="/api")
+app.include_router(profile_alias_router)
+app.include_router(profile_alias_router, prefix="/api")
 app.include_router(chat.router)
 app.include_router(tasks_router)
 app.include_router(behavior_router)
