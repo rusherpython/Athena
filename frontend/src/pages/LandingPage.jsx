@@ -16,7 +16,7 @@ export default function LandingPage() {
       {/* ============================================================ */}
       <div ref={heroScrollContainerRef} className="relative w-full h-[400vh]">
         {/* Sticky full-screen viewport pinned during scroll */}
-        <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between">
+        <div className="sticky top-0 min-h-screen h-screen w-full flex flex-col justify-between">
           {/* ============================================================ */}
           {/* 1. CINEMATIC FULL-SCREEN STICKY CANVAS SEQUENCE             */}
           {/* ============================================================ */}
@@ -57,7 +57,7 @@ export default function LandingPage() {
           {/* ============================================================ */}
           {/* 3. HERO UI CONTENT OVERLAY                                   */}
           {/* ============================================================ */}
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-6 sm:pt-8 pb-3 flex-1 flex flex-col justify-between">
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-6 sm:pt-8 pb-4 sm:pb-6 flex-1 flex flex-col justify-between">
             {/* TOP NAVIGATION BAR */}
             <header className="w-full flex items-center justify-between py-2">
               {/* Brand Name: ATHENA */}
@@ -107,10 +107,10 @@ export default function LandingPage() {
               </div>
             </header>
 
-            {/* HERO CENTER HEADLINE & ACTIONS */}
-            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-4xl mx-auto px-2 my-auto">
+            {/* HERO CENTER HEADLINE, ACTIONS & ATHENA TITLE */}
+            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-4xl mx-auto px-4 py-2 sm:py-4 my-auto">
               {/* Availability-Style Badge */}
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#181228]/90 border border-purple-500/35 text-purple-200 text-[11px] font-medium tracking-[0.2em] uppercase backdrop-blur-md shadow-[0_0_20px_rgba(168,85,247,0.2)] mb-5 sm:mb-7">
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#181228]/90 border border-purple-500/35 text-purple-200 text-[11px] font-medium tracking-[0.2em] uppercase backdrop-blur-md shadow-[0_0_20px_rgba(168,85,247,0.2)] mb-3 sm:mb-5">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-400 shadow-[0_0_8px_#a855f7]" />
@@ -119,19 +119,19 @@ export default function LandingPage() {
               </div>
 
               {/* Bolder Headline with White -> Lavender Gradient & Soft Glow */}
-              <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-[68px] font-normal tracking-[-0.015em] leading-[1.14] max-w-4xl mx-auto bg-gradient-to-r from-white via-[#f3e8ff] to-[#e9d5ff] bg-clip-text text-transparent drop-shadow-[0_4px_30px_rgba(216,180,254,0.32)]">
+              <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-[64px] font-normal tracking-[-0.015em] leading-[1.12] max-w-4xl mx-auto bg-gradient-to-r from-white via-[#f3e8ff] to-[#e9d5ff] bg-clip-text text-transparent drop-shadow-[0_4px_30px_rgba(216,180,254,0.32)]">
                 A New Kind of Intelligence
                 <br />
                 <span className="italic font-light text-neutral-100">– Human at Heart</span>
               </h1>
 
               {/* Subtitle with High Readability */}
-              <p className="mt-4 sm:mt-6 max-w-2xl mx-auto text-neutral-300 text-sm sm:text-base font-light leading-relaxed tracking-wide drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+              <p className="mt-3 sm:mt-5 max-w-2xl mx-auto text-neutral-300 text-sm sm:text-base font-light leading-relaxed tracking-wide drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
                 ATHENA is your evolving personal digital twin and AI life assistant. Designed to learn your daily routines, enhance your productivity, understand your habits, and grow with you in empathetic synchrony.
               </p>
 
               {/* Call to Action Button */}
-              <div className="mt-6 sm:mt-8 flex items-center gap-3">
+              <div className="mt-5 sm:mt-7 flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => navigate('/login')}
@@ -141,26 +141,19 @@ export default function LandingPage() {
                   <span>Launch Your Twin</span>
                 </button>
               </div>
-            </div>
 
-            {/* ============================================================ */}
-            {/* 4. ATHENA MAIN VISUAL: 90vw WIDE AT BOTTOM                   */}
-            {/* With large elegant typography, white/lavender gradient,      */}
-            {/* subtle pink glow, and soft depth shadow                      */}
-            {/* ============================================================ */}
-            <div
-              className="w-full flex items-center justify-center pb-12 sm:pb-16 md:pb-20 pointer-events-none select-none overflow-visible"
-              style={{ transform: 'translate3d(0, -70px, 0)' }}
-            >
-              <span
-                className="w-[90vw] text-center font-serif font-light uppercase tracking-[0.18em] text-[12vw] leading-none bg-gradient-to-b from-white via-[#f5d0fe] to-[#c084fc] bg-clip-text text-transparent inline-block overflow-visible"
-                style={{
-                  filter: 'drop-shadow(0 0 35px rgba(244, 114, 182, 0.35)) drop-shadow(0 15px 30px rgba(0, 0, 0, 0.95))',
-                  paddingBottom: '0.12em',
-                }}
-              >
-                ATHENA
-              </span>
+              {/* Large Central ATHENA Title - Cleanly spaced below button */}
+              <div className="mt-6 sm:mt-8 md:mt-10 w-full flex items-center justify-center pointer-events-none select-none">
+                <span
+                  className="text-center font-serif font-light uppercase tracking-[0.2em] sm:tracking-[0.24em] text-4xl sm:text-6xl md:text-7xl lg:text-[84px] xl:text-[96px] leading-none bg-gradient-to-b from-white via-[#f5d0fe] to-[#c084fc] bg-clip-text text-transparent inline-block"
+                  style={{
+                    filter: 'drop-shadow(0 0 35px rgba(244, 114, 182, 0.35)) drop-shadow(0 15px 30px rgba(0, 0, 0, 0.95))',
+                    paddingBottom: '0.08em',
+                  }}
+                >
+                  ATHENA
+                </span>
+              </div>
             </div>
           </div>
         </div>
