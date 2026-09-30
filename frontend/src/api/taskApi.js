@@ -29,7 +29,7 @@ export const taskApi = {
       localTasks = localTasks.map((t) => (t.id === id ? { ...t, ...updates } : t));
       return localTasks.find((t) => t.id === id);
     }
-    const res = await apiClient.put(API_ENDPOINTS.tasks.update(id), updates);
+    const res = await apiClient.patch(API_ENDPOINTS.tasks.update(id), updates);
     return res.data;
   },
 
@@ -49,7 +49,7 @@ export const taskApi = {
       localTasks = localTasks.map((t) => (t.id === id ? { ...t, status: 'completed' } : t));
       return { success: true };
     }
-    const res = await apiClient.post(API_ENDPOINTS.tasks.complete(id));
+    const res = await apiClient.patch(API_ENDPOINTS.tasks.update(id), { status: 'completed' });
     return res.data;
   },
 };

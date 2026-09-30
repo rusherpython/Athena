@@ -29,7 +29,7 @@ export const reminderApi = {
       localReminders = localReminders.map((r) => (r.id === id ? { ...r, ...updates } : r));
       return localReminders.find((r) => r.id === id);
     }
-    const res = await apiClient.put(API_ENDPOINTS.reminders.update(id), updates);
+    const res = await apiClient.patch(API_ENDPOINTS.reminders.update(id), updates);
     return res.data;
   },
 

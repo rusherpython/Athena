@@ -5,92 +5,92 @@
 export const API_ENDPOINTS = {
   // Auth
   auth: {
-    login: '/api/auth/login',
-    register: '/api/auth/register',
-    logout: '/api/auth/logout',
-    me: '/api/auth/me',
+    login: '/auth/login',
+    register: '/auth/register',
+    logout: '/auth/logout',
+    me: '/auth/me',
   },
 
   // User / Profile
   user: {
-    profile: '/api/user/profile',
-    update: '/api/user/profile',
-    onboarding: '/api/user/onboarding',
-    onboardingComplete: '/api/user/onboarding/complete',
+    profile: '/user/profile',
+    update: '/user/profile',
+    onboarding: '/user/onboarding',
+    onboardingComplete: '/user/onboarding/complete',
   },
 
   // Chat / ATHENA
   chat: {
-    send: '/api/chat',
-    history: '/api/chat/history',
+    send: '/chat',
+    history: '/chat/history',
   },
 
   // Tasks
   tasks: {
-    list: '/api/tasks',
-    create: '/api/tasks',
-    update: (id) => `/api/tasks/${id}`,
-    delete: (id) => `/api/tasks/${id}`,
-    complete: (id) => `/api/tasks/${id}/complete`,
+    list: '/tasks',
+    create: '/tasks',
+    update: (id) => `/tasks/${id}`,
+    delete: (id) => `/tasks/${id}`,
+    complete: (id) => `/tasks/${id}`,
   },
 
   // Reminders
   reminders: {
-    list: '/api/reminders',
-    create: '/api/reminders',
-    update: (id) => `/api/reminders/${id}`,
-    delete: (id) => `/api/reminders/${id}`,
+    list: '/reminders',
+    create: '/reminders',
+    update: (id) => `/reminders/${id}`,
+    delete: (id) => `/reminders/${id}`,
   },
 
   // Memory
   memory: {
-    get: '/api/memory',
-    add: '/api/memory',
-    update: (id) => `/api/memory/${id}`,
-    delete: (id) => `/api/memory/${id}`,
+    get: '/memory',
+    add: '/memory',
+    update: (id) => `/memory/${id}`,
+    delete: (id) => `/memory/${id}`,
   },
 
   // Behavior / Digital Twin
   behavior: {
-    patterns: '/api/behavior/patterns',
-    insights: '/api/behavior/insights',
+    patterns: '/behavior',
+    insights: '/behavior',
   },
 
   // Wellness
   wellness: {
-    get: '/api/wellness',
-    update: '/api/wellness',
-    period: '/api/wellness/period',
-    sleep: '/api/wellness/sleep',
-    workout: '/api/wellness/workout',
+    get: '/wellness',
+    update: '/wellness',
+    period: '/wellness',
+    sleep: '/wellness',
+    workout: '/wellness',
   },
 
   // Lifestyle
   lifestyle: {
-    get: '/api/lifestyle',
-    update: '/api/lifestyle',
-    spotify: '/api/lifestyle/spotify',
-    youtube: '/api/lifestyle/youtube',
-    pets: '/api/lifestyle/pets',
+    get: '/lifestyle',
+    update: '/lifestyle',
+    spotify: '/lifestyle',
+    youtube: '/lifestyle',
+    pets: '/lifestyle',
   },
 
   // Safety
   safety: {
-    contacts: '/api/safety/contacts',
-    sos: '/api/safety/sos',
-    checkIn: '/api/safety/check-in',
-    settings: '/api/safety/settings',
+    contacts: '/safety/contacts',
+    sos: '/safety/sos',
+    checkIn: '/safety/check-in',
+    settings: '/safety/config',
   },
 
   // Rewards
   rewards: {
-    get: '/api/rewards',
-    history: '/api/rewards/history',
-    redeem: (id) => `/api/rewards/${id}/redeem`,
+    get: '/rewards',
+    history: '/rewards/history',
+    redeem: (id) => `/rewards/${id}/redeem`,
   },
 
   // Feedback
   feedback: {
-    submit: '/api/feedback',
+    submit: '/feedback',
   },
 };

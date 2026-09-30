@@ -12,7 +12,14 @@ export const authApi = {
       return { token, user: { ...mockUser, email } };
     }
     const res = await apiClient.post(API_ENDPOINTS.auth.login, { email, password });
-    return res.data;
+    const token = res.data.access_token || res.data.token;
+    const user = {
+      id: res.data.user_id,
+      email,
+      name: email.split('@')[0],
+      ...(res.data.user || {}),
+    };
+    return { token, user };
   },
 
   async register(name, email, password) {
@@ -22,7 +29,26 @@ export const authApi = {
       return { token, user: { ...mockUser, name, email, onboardingComplete: false } };
     }
     const res = await apiClient.post(API_ENDPOINTS.auth.register, { name, email, password });
-    return res.data;
+    if (res.data.access_token) {
+      return {
+        token: res.data.access_token,
+        user: { id: res.data.user_id, email, name },
+      };
+    }
+    // Attempt automatic login after registration
+    try {
+      const loginRes = await apiClient.post(API_ENDPOINTS.auth.login, { email, password });
+      return {
+        token: loginRes.data.access_token,
+        user: { id: loginRes.data.user_id, email, name },
+      };
+    } catch {
+      return {
+        token: null,
+        user: { id: res.data.user_id, email, name },
+        message: res.data.message,
+      };
+    }
   },
 
   async logout() {

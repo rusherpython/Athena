@@ -8,10 +8,21 @@ from app.routers.safety import router as safety_router
 from app.routers.lifestyle import router as lifestyle_router
 from app.routers.reminders import router as reminders_router
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="Athena API",
     description="API for Athena application",
     version="1.0.0"
+)
+
+# CORS middleware for frontend connection
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth.router)

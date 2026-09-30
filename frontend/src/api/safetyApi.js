@@ -39,7 +39,7 @@ export const safetyApi = {
       localSosSettings = { ...localSosSettings, ...settings };
       return localSosSettings;
     }
-    const res = await apiClient.put(API_ENDPOINTS.safety.settings, settings);
+    const res = await apiClient.patch(API_ENDPOINTS.safety.settings, settings);
     return res.data;
   },
 
