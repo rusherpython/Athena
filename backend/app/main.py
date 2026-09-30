@@ -26,6 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(auth.router, prefix="/api")
 app.include_router(chat.router)
 app.include_router(tasks_router)
 app.include_router(behavior_router)

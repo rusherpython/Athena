@@ -33,7 +33,19 @@ export const authApi = {
           `Cannot connect to backend (${url}). If your Render server is waking up from standby, please retry in 30 seconds, or use Demo Mode.`
         );
       }
-      const detail = err.response?.data?.detail || err.response?.data?.message;
+      if (err.response.status === 404) {
+        const url = getBaseUrl();
+        throw new Error(`Authentication route not found (404) at ${url}${API_ENDPOINTS.auth.login}.`);
+      }
+      const data = err.response?.data;
+      let detail = '';
+      if (typeof data?.detail === 'string') {
+        detail = data.detail;
+      } else if (Array.isArray(data?.detail)) {
+        detail = data.detail.map((d) => d.msg || d.message).join(', ');
+      } else if (data?.message) {
+        detail = data.message;
+      }
       if (typeof detail === 'string' && (detail.toLowerCase().includes('confirm') || detail.toLowerCase().includes('verify'))) {
         throw new Error('Supabase email confirmation is enabled. Please confirm your email via your inbox, or disable email verification in Supabase dashboard.');
       }
@@ -58,8 +70,20 @@ export const authApi = {
           `Cannot connect to backend (${url}). Ensure your Render backend is running, or use Demo Mode.`
         );
       }
-      const detail = err.response?.data?.detail || err.response?.data?.message;
-      throw new Error(detail || 'Registration failed. Please try a different email or password.');
+      if (err.response.status === 404) {
+        const url = getBaseUrl();
+        throw new Error(`Authentication route not found (404) at ${url}${API_ENDPOINTS.auth.register}. Please check server URL.`);
+      }
+      const data = err.response?.data;
+      let errorMsg = '';
+      if (typeof data?.detail === 'string') {
+        errorMsg = data.detail;
+      } else if (Array.isArray(data?.detail)) {
+        errorMsg = data.detail.map((d) => d.msg || d.message).join(', ');
+      } else if (data?.message) {
+        errorMsg = data.message;
+      }
+      throw new Error(errorMsg || `Registration failed (status ${err.response.status}). Please try a different email or password.`);
     }
 
     // If server provided access_token immediately
