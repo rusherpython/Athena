@@ -26,6 +26,21 @@ export default function SettingsPage() {
     email: user?.email || '',
   });
 
+  const [activeTheme, setActiveTheme] = useState(() => {
+    return localStorage.getItem('athena_theme') || 'crimson';
+  });
+
+  const handleThemeChange = (themeId) => {
+    setActiveTheme(themeId);
+    localStorage.setItem('athena_theme', themeId);
+    document.documentElement.setAttribute('data-theme', themeId);
+    addToast({
+      title: 'Theme updated',
+      message: `Active theme set to ${themeId.charAt(0).toUpperCase() + themeId.slice(1)}.`,
+      type: 'success',
+    });
+  };
+
   const set = (f, v) => setForm((p) => ({ ...p, [f]: v }));
 
   const handleSave = async () => {
@@ -151,25 +166,57 @@ export default function SettingsPage() {
           {activeSection === 'appearance' && (
             <div>
               <h2 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 700, marginBottom: 18 }}>Appearance</h2>
-              <div style={{ padding: '14px 18px', borderRadius: 12, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)', marginBottom: 16 }}>
-                <p style={{ color: '#f87171', fontSize: 13 }}>Theme: <span style={{ fontWeight: 700 }}>Dark Futuristic (Default)</span></p>
-                <p style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>ATHENA uses a dark theme with crimson red accents — this is the intended design aesthetic for GATEWAYS 2026.</p>
+              <div style={{ padding: '14px 18px', borderRadius: 12, background: 'var(--athena-accent-soft)', border: '1px solid var(--athena-accent-border)', marginBottom: 16 }}>
+                <p style={{ color: 'var(--athena-accent-light)', fontSize: 13 }}>
+                  Theme: <span style={{ fontWeight: 700 }}>{activeTheme.charAt(0).toUpperCase() + activeTheme.slice(1)}</span>
+                </p>
+                <p style={{ color: '#94a3b8', fontSize: 12, marginTop: 4 }}>
+                  Select an accent theme below to instantly customize ATHENA's futuristic interface across all pages and components.
+                </p>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 12 }}>
                 {[
-                  { name: 'Crimson', color: '#dc2626', active: true },
-                  { name: 'Ocean', color: '#2563eb', active: false },
-                  { name: 'Emerald', color: '#16a34a', active: false },
-                  { name: 'Violet', color: '#7c3aed', active: false },
-                ].map((theme) => (
-                  <div key={theme.name} style={{ padding: '14px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: `2px solid ${theme.active ? theme.color + '55' : 'rgba(255,255,255,0.06)'}`, cursor: theme.active ? 'default' : 'not-allowed', textAlign: 'center', opacity: theme.active ? 1 : 0.5 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: theme.color, margin: '0 auto 8px', boxShadow: theme.active ? `0 0 12px ${theme.color}55` : 'none' }} />
-                    <p style={{ color: '#94a3b8', fontSize: 12 }}>{theme.name}</p>
-                    {theme.active && <p style={{ color: theme.color, fontSize: 10, fontWeight: 700, marginTop: 2 }}>Active</p>}
-                  </div>
-                ))}
+                  { id: 'crimson', name: 'Crimson', color: '#dc2626' },
+                  { id: 'ocean', name: 'Ocean', color: '#0ea5e9' },
+                  { id: 'emerald', name: 'Emerald', color: '#10b981' },
+                  { id: 'violet', name: 'Violet', color: '#9333ea' },
+                ].map((theme) => {
+                  const isActive = activeTheme === theme.id;
+                  return (
+                    <div
+                      key={theme.id}
+                      onClick={() => handleThemeChange(theme.id)}
+                      style={{
+                        padding: '16px 14px',
+                        borderRadius: 12,
+                        background: isActive ? `${theme.color}15` : 'rgba(255,255,255,0.03)',
+                        border: `2px solid ${isActive ? theme.color : 'rgba(255,255,255,0.06)'}`,
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        boxShadow: isActive ? `0 0 16px ${theme.color}40` : 'none',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 34,
+                          height: 34,
+                          borderRadius: '50%',
+                          background: theme.color,
+                          margin: '0 auto 8px',
+                          boxShadow: isActive ? `0 0 12px ${theme.color}88` : 'none',
+                        }}
+                      />
+                      <p style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 600 }}>{theme.name}</p>
+                      {isActive ? (
+                        <p style={{ color: theme.color, fontSize: 11, fontWeight: 700, marginTop: 4 }}>Active</p>
+                      ) : (
+                        <p style={{ color: '#64748b', fontSize: 11, marginTop: 4 }}>Click to apply</p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <p style={{ color: '#334155', fontSize: 11, marginTop: 12 }}>Additional themes coming post-hackathon.</p>
             </div>
           )}
 

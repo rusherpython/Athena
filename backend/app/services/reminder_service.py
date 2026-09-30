@@ -25,18 +25,30 @@ def create_reminder(
 
     client = _get_authed_client(token) if token else supabase
     response = client.table("reminders").insert(data).execute()
-    return response.data
+    
+    if response.data and isinstance(response.data, list) and len(response.data) > 0:
+        rec = response.data[0]
+    else:
+        rec = data
+
+    rec["status"] = "completed" if rec.get("completed") else "pending"
+    rem_at = rec.get("remind_at") or ""
+    if "T" in rem_at:
+        parts = rem_at.split("T")
+        rec.setdefault("date", parts[0])
+        rec.setdefault("time", parts[1][:5])
+    rec.setdefault("type", rec.get("description") or "custom")
+    return rec
 
 
 def get_reminders(
     user_id: str,
     token: str = None,
-    limit: int = 20,
-    include_completed: bool = False,
+    limit: int = 50,
+    include_completed: bool = True,
 ):
     """
     Return the user's reminders, ordered by remind_at ascending.
-    By default only incomplete (active) reminders are returned.
     """
     client = _get_authed_client(token) if token else supabase
 
@@ -53,7 +65,17 @@ def get_reminders(
         query = query.eq("completed", False)
 
     response = query.execute()
-    return response.data or []
+    results = []
+    for r in (response.data or []):
+        r["status"] = "completed" if r.get("completed") else "pending"
+        rem_at = r.get("remind_at") or ""
+        if "T" in rem_at:
+            parts = rem_at.split("T")
+            r.setdefault("date", parts[0])
+            r.setdefault("time", parts[1][:5])
+        r.setdefault("type", r.get("description") or "custom")
+        results.append(r)
+    return results
 
 
 def update_reminder(

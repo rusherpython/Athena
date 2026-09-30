@@ -15,24 +15,37 @@ export default function RewardsPage() {
 
   const load = async () => {
     setLoading(true); setError(null);
-    try { setRewards(await rewardsApi.getRewards()); }
-    catch { setError('Unable to load rewards.'); }
-    finally { setLoading(false); }
+    try {
+      const data = await rewardsApi.getRewards();
+      setRewards(data);
+    } catch (err) {
+      console.error('Failed to load rewards:', err);
+      const detail = err?.response?.data?.detail || err?.message || 'Unable to load rewards.';
+      setError(typeof detail === 'string' ? detail : JSON.stringify(detail));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
 
   const handleRedeem = async (reward) => {
-    if (rewards.points < reward.cost) {
-      addToast({ title: 'Insufficient points', message: `You need ${reward.cost - rewards.points} more ATHENA points.`, type: 'warning' }); return;
+    if ((rewards?.points ?? 0) < reward.cost) {
+      addToast({ title: 'Insufficient points', message: `You need ${reward.cost - (rewards?.points ?? 0)} more ATHENA points.`, type: 'warning' });
+      return;
     }
     setRedeeming(reward.id);
     try {
       const res = await rewardsApi.redeemReward(reward.id);
       setRewards((prev) => ({ ...prev, points: prev.points - reward.cost }));
-      addToast({ title: res.success ? '🎉 Reward redeemed!' : 'Error', message: res.message, type: res.success ? 'success' : 'warning' });
-    } catch { addToast({ title: 'Error', type: 'error' }); }
-    finally { setRedeeming(null); }
+      addToast({ title: res.success ? '🎉 Reward redeemed!' : 'Notice', message: res.message, type: res.success ? 'success' : 'warning' });
+    } catch (err) {
+      console.error('Failed to redeem reward:', err);
+      const detail = err?.response?.data?.detail || err?.message || 'Redeem failed';
+      addToast({ title: 'Error', message: detail, type: 'error' });
+    } finally {
+      setRedeeming(null);
+    }
   };
 
   if (loading) return <LoadingSpinner fullPage />;
@@ -124,15 +137,20 @@ export default function RewardsPage() {
       )}
 
       {/* Available rewards */}
-      {rewards?.available?.length > 0 && (
-        <div className="glass-card" style={{ padding: 22, marginBottom: 24 }}>
-          <h2 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 700, marginBottom: 14 }}>🎁 Available Rewards</h2>
+      <div className="glass-card" style={{ padding: 22, marginBottom: 24 }}>
+        <h2 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 700, marginBottom: 14 }}>🎁 Available Rewards</h2>
+        {(!rewards?.available || rewards.available.length === 0) ? (
+          <p style={{ color: '#64748b', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>No rewards available yet</p>
+        ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
             {rewards.available.map((reward) => {
-              const canAfford = rewards.points >= reward.cost;
+              const canAfford = (rewards?.points ?? 0) >= reward.cost;
               return (
                 <div key={reward.id} style={{ padding: '16px 18px', borderRadius: 12, background: canAfford ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${canAfford ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
-                  <span style={{ fontSize: 28, display: 'block', marginBottom: 8 }}>{reward.icon}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 28 }}>{reward.icon}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Demo Reward</span>
+                  </div>
                   <p style={{ color: '#f1f5f9', fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{reward.title}</p>
                   <p style={{ color: '#64748b', fontSize: 12, marginBottom: 12 }}>{reward.description}</p>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -154,8 +172,8 @@ export default function RewardsPage() {
               );
             })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* History */}
       {rewards?.history?.length > 0 && (

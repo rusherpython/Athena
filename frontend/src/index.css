@@ -14,10 +14,71 @@
 }
 
 @layer base {
+  :root,
+  [data-theme="crimson"] {
+    --athena-accent: #dc2626;
+    --athena-accent-light: #f87171;
+    --athena-accent-dark: #991b1b;
+    --athena-accent-glow: rgba(220, 38, 38, 0.28);
+    --athena-accent-soft: rgba(220, 38, 38, 0.12);
+    --athena-accent-border: rgba(220, 38, 38, 0.22);
+    --athena-btn-grad-start: #ef4444;
+    --athena-btn-grad-mid: #dc2626;
+    --athena-btn-grad-end: #b91c1c;
+    --athena-sidebar-active-bg: rgba(220, 38, 38, 0.14);
+    --athena-sidebar-active-text: #fca5a5;
+    --athena-sidebar-active-bar: #dc2626;
+  }
+
+  [data-theme="ocean"] {
+    --athena-accent: #0ea5e9;
+    --athena-accent-light: #38bdf8;
+    --athena-accent-dark: #0284c7;
+    --athena-accent-glow: rgba(14, 165, 233, 0.28);
+    --athena-accent-soft: rgba(14, 165, 233, 0.12);
+    --athena-accent-border: rgba(14, 165, 233, 0.22);
+    --athena-btn-grad-start: #38bdf8;
+    --athena-btn-grad-mid: #0ea5e9;
+    --athena-btn-grad-end: #0284c7;
+    --athena-sidebar-active-bg: rgba(14, 165, 233, 0.14);
+    --athena-sidebar-active-text: #7dd3fc;
+    --athena-sidebar-active-bar: #0ea5e9;
+  }
+
+  [data-theme="emerald"] {
+    --athena-accent: #10b981;
+    --athena-accent-light: #34d399;
+    --athena-accent-dark: #059669;
+    --athena-accent-glow: rgba(16, 185, 129, 0.28);
+    --athena-accent-soft: rgba(16, 185, 129, 0.12);
+    --athena-accent-border: rgba(16, 185, 129, 0.22);
+    --athena-btn-grad-start: #34d399;
+    --athena-btn-grad-mid: #10b981;
+    --athena-btn-grad-end: #059669;
+    --athena-sidebar-active-bg: rgba(16, 185, 129, 0.14);
+    --athena-sidebar-active-text: #6ee7b7;
+    --athena-sidebar-active-bar: #10b981;
+  }
+
+  [data-theme="violet"] {
+    --athena-accent: #9333ea;
+    --athena-accent-light: #c084fc;
+    --athena-accent-dark: #7e22ce;
+    --athena-accent-glow: rgba(168, 85, 247, 0.28);
+    --athena-accent-soft: rgba(147, 51, 234, 0.12);
+    --athena-accent-border: rgba(168, 85, 247, 0.22);
+    --athena-btn-grad-start: #a855f7;
+    --athena-btn-grad-mid: #9333ea;
+    --athena-btn-grad-end: #7e22ce;
+    --athena-sidebar-active-bg: rgba(147, 51, 234, 0.14);
+    --athena-sidebar-active-text: #d8b4fe;
+    --athena-sidebar-active-bar: #a855f7;
+  }
+
   :root {
-    --athena-red: #9333ea;
-    --athena-red-dark: #6b21a8;
-    --athena-red-glow: rgba(168, 85, 247, 0.25);
+    --athena-red: var(--athena-accent);
+    --athena-red-dark: var(--athena-accent-dark);
+    --athena-red-glow: var(--athena-accent-glow);
     --athena-bg: #06040a;
     --athena-surface: #0e0a18;
     --athena-surface-2: #140f22;
@@ -25,7 +86,7 @@
     --athena-text: #f4f6fa;
     --athena-text-muted: #9aa3b8;
     --athena-glass: rgba(255, 255, 255, 0.03);
-    --athena-glass-border: rgba(168, 85, 247, 0.18);
+    --athena-glass-border: var(--athena-accent-border);
     --athena-radius: 16px;
     --athena-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
     --sidebar-width: 248px;
@@ -52,7 +113,7 @@
   }
 
   ::selection {
-    background: rgba(168, 85, 247, 0.35);
+    background: var(--athena-accent-soft);
     color: #fff;
   }
 
@@ -64,11 +125,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(168, 85, 247, 0.2);
+    background: var(--athena-glass-border);
     border-radius: 100px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(168, 85, 247, 0.4);
+    background: var(--athena-accent);
   }
 }
 
@@ -94,9 +155,9 @@
   }
 
   .athena-btn-primary {
-    background: linear-gradient(180deg, #a855f7, #9333ea 55%, #7e22ce);
+    background: linear-gradient(180deg, var(--athena-btn-grad-start), var(--athena-btn-grad-mid) 55%, var(--athena-btn-grad-end));
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
     padding: 10px 18px;
     font-weight: 600;
@@ -104,7 +165,7 @@
     letter-spacing: -0.01em;
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
-    box-shadow: 0 8px 22px rgba(147, 51, 234, 0.28);
+    box-shadow: 0 8px 22px var(--athena-accent-glow);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -115,7 +176,7 @@
   .athena-btn-primary:hover:not(:disabled) {
     filter: brightness(1.08);
     transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(147, 51, 234, 0.4);
+    box-shadow: 0 12px 28px var(--athena-accent-glow);
   }
 
   .athena-btn-primary:active:not(:disabled) {
@@ -162,8 +223,8 @@
   }
 
   .athena-input:focus {
-    border-color: rgba(168, 85, 247, 0.6);
-    box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.15);
+    border-color: var(--athena-accent);
+    box-shadow: 0 0 0 4px var(--athena-accent-soft);
   }
 
   .athena-input::placeholder {
@@ -207,9 +268,9 @@
   }
 
   .athena-sidebar-item.active {
-    background: rgba(147, 51, 234, 0.14);
-    color: #d8b4fe;
-    box-shadow: inset 2px 0 0 #a855f7;
+    background: var(--athena-sidebar-active-bg);
+    color: var(--athena-sidebar-active-text);
+    box-shadow: inset 2px 0 0 var(--athena-sidebar-active-bar);
   }
 
   .progress-bar-track {
@@ -220,7 +281,7 @@
   }
 
   .progress-bar-fill {
-    background: linear-gradient(90deg, #9333ea, #c084fc);
+    background: linear-gradient(90deg, var(--athena-accent), var(--athena-accent-light));
     border-radius: 100px;
     height: 100%;
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -239,9 +300,9 @@
   }
 
   .badge-red {
-    background: rgba(147, 51, 234, 0.15);
-    color: #d8b4fe;
-    border: 1px solid rgba(168, 85, 247, 0.28);
+    background: var(--athena-accent-soft);
+    color: var(--athena-accent-light);
+    border: 1px solid var(--athena-accent-border);
   }
 
   .badge-green {

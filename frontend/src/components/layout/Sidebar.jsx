@@ -47,18 +47,24 @@ export default function Sidebar({ open, onClose }) {
       )}
 
       <nav
-        className={`fixed top-0 bottom-0 left-0 z-[500] flex w-[var(--sidebar-width)] flex-col border-r border-purple-500/15 bg-[#0a0714]/95 backdrop-blur-xl transition-transform duration-300 ${
+        className={`fixed top-0 bottom-0 left-0 z-[500] flex w-[var(--sidebar-width)] flex-col border-r border-[var(--athena-glass-border)] bg-[#07050e]/95 backdrop-blur-xl transition-transform duration-300 ${
           open ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >
-        <div className="flex items-center justify-between border-b border-purple-500/15 px-5 py-5">
+        <div className="flex items-center justify-between border-b border-[var(--athena-glass-border)] px-5 py-5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 via-violet-600 to-purple-800 shadow-[0_8px_20px_rgba(168,85,247,0.3)]">
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-xl"
+              style={{
+                background: 'linear-gradient(135deg, var(--athena-btn-grad-start), var(--athena-btn-grad-end))',
+                boxShadow: '0 8px 20px var(--athena-accent-glow)',
+              }}
+            >
               <Zap size={17} color="white" />
             </div>
             <div>
               <span className="block text-[17px] font-bold tracking-tight text-white font-serif">ATHENA</span>
-              <p className="mt-[-2px] text-[9px] font-semibold tracking-[0.16em] text-purple-300 uppercase">Digital Twin</p>
+              <p className="mt-[-2px] text-[9px] font-semibold tracking-[0.16em] uppercase" style={{ color: 'var(--athena-accent-light)' }}>Digital Twin</p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="icon-btn lg:hidden">
@@ -67,13 +73,18 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         <div className="px-3 pt-4 pb-2">
-          <div className="flex items-center gap-3 rounded-xl border border-purple-500/15 bg-white/[0.03] px-3 py-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 via-violet-600 to-purple-800 text-sm font-bold text-white shadow-sm">
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--athena-glass-border)] bg-white/[0.03] px-3 py-2.5">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm"
+              style={{
+                background: 'linear-gradient(135deg, var(--athena-btn-grad-start), var(--athena-btn-grad-end))',
+              }}
+            >
               {initial}
             </div>
             <div className="min-w-0">
               <p className="truncate text-[13px] font-semibold text-neutral-100">{name}</p>
-              <p className="truncate text-[11px] text-purple-300/70">{user?.email || ''}</p>
+              <p className="truncate text-[11px]" style={{ color: 'var(--athena-accent-light)', opacity: 0.85 }}>{user?.email || ''}</p>
             </div>
           </div>
         </div>

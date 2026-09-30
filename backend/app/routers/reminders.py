@@ -22,32 +22,37 @@ def add_reminder(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     title = data.get("title")
-    remind_at = data.get("remind_at")
+    if not title or not str(title).strip():
+        raise HTTPException(
+            status_code=422,
+            detail="Title is required.",
+        )
 
-    if not title:
-        raise HTTPException(
-            status_code=422,
-            detail="title is required",
-        )
+    remind_at = data.get("remind_at")
     if not remind_at:
-        raise HTTPException(
-            status_code=422,
-            detail="remind_at (ISO-8601 datetime) is required",
-        )
+        date_part = data.get("date")
+        time_part = data.get("time") or "09:00"
+        if date_part:
+            remind_at = f"{date_part}T{time_part}:00"
+        else:
+            from datetime import datetime, timezone
+            remind_at = datetime.now(timezone.utc).isoformat()
+
+    description = data.get("description") or data.get("type") or "custom"
 
     return create_reminder(
         user_id=user.id,
-        title=title,
+        title=str(title).strip(),
         remind_at=remind_at,
-        description=data.get("description"),
+        description=description,
         token=credentials.credentials,
     )
 
 
 @router.get("")
 def list_reminders(
-    include_completed: bool = False,
-    limit: int = 20,
+    include_completed: bool = True,
+    limit: int = 50,
     user=Depends(get_current_user),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
@@ -66,14 +71,18 @@ def edit_reminder(
     user=Depends(get_current_user),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
+    completed = data.get("completed")
+    if completed is None and "status" in data:
+        completed = (data.get("status") == "completed")
+
     return update_reminder(
         reminder_id=reminder_id,
         user_id=user.id,
         token=credentials.credentials,
         title=data.get("title"),
-        description=data.get("description"),
+        description=data.get("description") or data.get("type"),
         remind_at=data.get("remind_at"),
-        completed=data.get("completed"),
+        completed=completed,
     )
 
 

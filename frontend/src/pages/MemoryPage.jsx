@@ -26,23 +26,43 @@ export default function MemoryPage() {
 
   const load = async () => {
     setLoading(true); setError(null);
-    try { setMemories(await memoryApi.getMemory()); }
-    catch { setError('Unable to load memories.'); }
-    finally { setLoading(false); }
+    try {
+      const data = await memoryApi.getMemory();
+      setMemories(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load memories:', err);
+      const detail = err?.response?.data?.detail || err?.message || 'Unable to load memories.';
+      setError(typeof detail === 'string' ? detail : JSON.stringify(detail));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
 
   const handleAdd = async () => {
-    if (!form.content.trim()) { addToast({ title: 'Empty memory', type: 'warning' }); return; }
+    if (!form.content.trim()) {
+      addToast({ title: 'Empty memory', message: 'Please enter something for ATHENA to remember.', type: 'warning' });
+      return;
+    }
     setSaving(true);
     try {
       const created = await memoryApi.addMemory(form);
       setMemories((prev) => [created, ...prev]);
       addToast({ title: 'Memory saved!', message: 'ATHENA will remember this.', type: 'success' });
-      setShowModal(false); setForm({ content: '', type: 'explicit', category: 'preference' });
-    } catch { addToast({ title: 'Error', type: 'error' }); }
-    finally { setSaving(false); }
+      setShowModal(false);
+      setForm({ content: '', type: 'explicit', category: 'preference' });
+    } catch (err) {
+      console.error('Failed to save memory:', err);
+      const detail = err?.response?.data?.detail || err?.response?.data?.message || err?.message || 'Could not save memory';
+      addToast({
+        title: 'Could not save memory',
+        message: typeof detail === 'string' ? detail : JSON.stringify(detail),
+        type: 'error',
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -50,7 +70,11 @@ export default function MemoryPage() {
       await memoryApi.deleteMemory(id);
       setMemories((prev) => prev.filter((m) => m.id !== id));
       addToast({ title: 'Memory removed', type: 'info' });
-    } catch { addToast({ title: 'Error', type: 'error' }); }
+    } catch (err) {
+      console.error('Failed to delete memory:', err);
+      const detail = err?.response?.data?.detail || err?.message || 'Failed to delete memory';
+      addToast({ title: 'Delete failed', message: detail, type: 'error' });
+    }
   };
 
   const filtered = filter === 'all' ? memories : memories.filter((m) => m.type === filter);
@@ -85,9 +109,9 @@ export default function MemoryPage() {
         {['all', 'explicit', 'observed', 'learned'].map((f) => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '5px 12px', borderRadius: 100, fontSize: 12, cursor: 'pointer', textTransform: 'capitalize',
-            background: filter === f ? 'rgba(220,38,38,0.15)' : 'rgba(255,255,255,0.05)',
-            border: `1px solid ${filter === f ? 'rgba(220,38,38,0.4)' : 'rgba(255,255,255,0.1)'}`,
-            color: filter === f ? '#dc2626' : '#94a3b8', transition: 'all 0.2s',
+            background: filter === f ? 'var(--athena-accent-soft)' : 'rgba(255,255,255,0.05)',
+            border: `1px solid ${filter === f ? 'var(--athena-accent-border)' : 'rgba(255,255,255,0.1)'}`,
+            color: filter === f ? 'var(--athena-accent-light)' : '#94a3b8', transition: 'all 0.2s',
           }}>
             {f === 'all' ? 'All' : TYPE_CONFIG[f]?.label || f}
           </button>
@@ -96,11 +120,11 @@ export default function MemoryPage() {
 
       {loading && <LoadingSpinner fullPage />}
       {error && <EmptyState icon={AlertCircle} title="Load failed" message={error} action={load} />}
-      {!loading && filtered.length === 0 && (
+      {!loading && !error && filtered.length === 0 && (
         <EmptyState icon={Brain} title="No memories yet" message="Start telling ATHENA about yourself." action={() => setShowModal(true)} actionLabel="Add Memory" />
       )}
 
-      {!loading && (
+      {!loading && !error && filtered.length > 0 && (
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
           {filtered.map((m) => {
             const config = TYPE_CONFIG[m.type] || TYPE_CONFIG.explicit;

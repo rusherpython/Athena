@@ -34,38 +34,83 @@ export default function RemindersPage() {
 
   const load = async () => {
     setLoading(true); setError(null);
-    try { setReminders(await reminderApi.getReminders()); }
-    catch { setError('Unable to load reminders.'); }
-    finally { setLoading(false); }
+    try {
+      const data = await reminderApi.getReminders();
+      setReminders(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load reminders:', err);
+      const detail = err?.response?.data?.detail || err?.message || 'Unable to load reminders.';
+      setError(typeof detail === 'string' ? detail : JSON.stringify(detail));
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
 
   const handleAdd = async () => {
-    if (!form.title) { addToast({ title: 'Missing title', type: 'warning' }); return; }
+    if (!form.title || !form.title.trim()) {
+      addToast({ title: 'Missing title', message: 'Please enter a reminder title.', type: 'warning' });
+      return;
+    }
     setSaving(true);
     try {
-      const created = await reminderApi.createReminder(form);
+      let remind_at;
+      if (form.date && form.time) {
+        remind_at = `${form.date}T${form.time}:00`;
+      } else if (form.date) {
+        remind_at = `${form.date}T09:00:00`;
+      } else {
+        remind_at = new Date().toISOString();
+      }
+
+      const payload = {
+        ...form,
+        title: form.title.trim(),
+        remind_at,
+        description: form.type || 'custom',
+      };
+
+      const created = await reminderApi.createReminder(payload);
       setReminders((prev) => [created, ...prev]);
-      addToast({ title: 'Reminder set!', type: 'success' });
-      setShowModal(false); setForm(EMPTY_FORM);
-    } catch { addToast({ title: 'Error saving reminder', type: 'error' }); }
-    finally { setSaving(false); }
+      addToast({ title: 'Reminder set!', message: `"${payload.title}" has been saved.`, type: 'success' });
+      setShowModal(false);
+      setForm(EMPTY_FORM);
+    } catch (err) {
+      console.error('Failed to save reminder:', err);
+      const detail = err?.response?.data?.detail || err?.response?.data?.message || err?.message || 'Could not save reminder';
+      addToast({
+        title: 'Could not save reminder',
+        message: typeof detail === 'string' ? detail : JSON.stringify(detail),
+        type: 'error',
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id) => {
     try {
       await reminderApi.deleteReminder(id);
       setReminders((prev) => prev.filter((r) => r.id !== id));
-    } catch { addToast({ title: 'Error', type: 'error' }); }
+      addToast({ title: 'Reminder removed', type: 'info' });
+    } catch (err) {
+      console.error('Failed to delete reminder:', err);
+      const detail = err?.response?.data?.detail || err?.message || 'Failed to delete reminder';
+      addToast({ title: 'Delete failed', message: detail, type: 'error' });
+    }
   };
 
   const handleMarkDone = async (r) => {
     const newStatus = r.status === 'completed' ? 'pending' : 'completed';
     try {
-      await reminderApi.updateReminder(r.id, { status: newStatus });
-      setReminders((prev) => prev.map((rem) => rem.id === r.id ? { ...rem, status: newStatus } : rem));
-    } catch { addToast({ title: 'Error', type: 'error' }); }
+      await reminderApi.updateReminder(r.id, { status: newStatus, completed: newStatus === 'completed' });
+      setReminders((prev) => prev.map((rem) => rem.id === r.id ? { ...rem, status: newStatus, completed: newStatus === 'completed' } : rem));
+    } catch (err) {
+      console.error('Failed to update reminder:', err);
+      const detail = err?.response?.data?.detail || err?.message || 'Failed to update reminder';
+      addToast({ title: 'Update failed', message: detail, type: 'error' });
+    }
   };
 
   const filtered = filterType === 'all' ? reminders : reminders.filter((r) => r.type === filterType);
@@ -86,15 +131,15 @@ export default function RemindersPage() {
 
       {/* Type filter */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 20 }}>
-        <button onClick={() => setFilterType('all')} style={{ padding: '5px 12px', borderRadius: 100, fontSize: 12, cursor: 'pointer', background: filterType === 'all' ? 'rgba(220,38,38,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${filterType === 'all' ? 'rgba(220,38,38,0.4)' : 'rgba(255,255,255,0.1)'}`, color: filterType === 'all' ? '#dc2626' : '#94a3b8', transition: 'all 0.2s' }}>All</button>
+        <button onClick={() => setFilterType('all')} style={{ padding: '5px 12px', borderRadius: 100, fontSize: 12, cursor: 'pointer', background: filterType === 'all' ? 'var(--athena-accent-soft)' : 'rgba(255,255,255,0.05)', border: `1px solid ${filterType === 'all' ? 'var(--athena-accent-border)' : 'rgba(255,255,255,0.1)'}`, color: filterType === 'all' ? 'var(--athena-accent-light)' : '#94a3b8', transition: 'all 0.2s' }}>All</button>
         {REMINDER_TYPES.map((t) => (
-          <button key={t.value} onClick={() => setFilterType(t.value)} style={{ padding: '5px 12px', borderRadius: 100, fontSize: 12, cursor: 'pointer', background: filterType === t.value ? 'rgba(220,38,38,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${filterType === t.value ? 'rgba(220,38,38,0.4)' : 'rgba(255,255,255,0.1)'}`, color: filterType === t.value ? '#dc2626' : '#94a3b8', transition: 'all 0.2s' }}>{t.label}</button>
+          <button key={t.value} onClick={() => setFilterType(t.value)} style={{ padding: '5px 12px', borderRadius: 100, fontSize: 12, cursor: 'pointer', background: filterType === t.value ? 'var(--athena-accent-soft)' : 'rgba(255,255,255,0.05)', border: `1px solid ${filterType === t.value ? 'var(--athena-accent-border)' : 'rgba(255,255,255,0.1)'}`, color: filterType === t.value ? 'var(--athena-accent-light)' : '#94a3b8', transition: 'all 0.2s' }}>{t.label}</button>
         ))}
       </div>
 
       {loading && <LoadingSpinner fullPage />}
       {error && <EmptyState icon={AlertCircle} title="Load failed" message={error} action={load} actionLabel="Try Again" />}
-      {!loading && !error && filtered.length === 0 && <EmptyState title="No reminders" message="Add a reminder to get started." action={() => setShowModal(true)} actionLabel="Add Reminder" />}
+      {!loading && !error && filtered.length === 0 && <EmptyState title="No reminders yet" message="Add a reminder to get started." action={() => setShowModal(true)} actionLabel="Add Reminder" />}
 
       {/* Pending */}
       {!loading && pending.length > 0 && (

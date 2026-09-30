@@ -29,8 +29,13 @@ function QuickCard({ icon: Icon, iconColor, label, value, onClick, accent }) {
       style={{ padding: '18px 20px', cursor: onClick ? 'pointer' : 'default', flex: 1, minWidth: 140 }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: `rgba(${accent || '220,38,38'},0.1)`, border: `1px solid rgba(${accent || '220,38,38'},0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={17} color={iconColor || '#dc2626'} />
+        <div style={{
+          width: 34, height: 34, borderRadius: 10,
+          background: accent ? `rgba(${accent},0.1)` : 'var(--athena-accent-soft)',
+          border: accent ? `1px solid rgba(${accent},0.2)` : '1px solid var(--athena-accent-border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Icon size={17} color={iconColor || 'var(--athena-accent)'} />
         </div>
         <span style={{ color: '#64748b', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
       </div>
@@ -50,12 +55,13 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mood, setMood] = useState(null);
-  const [dailyGoals] = useState([
-    { text: 'Study 2 hours', done: true },
-    { text: 'Complete AI Assignment', done: true },
-    { text: 'Workout', done: false },
-    { text: 'Read 30 minutes', done: false },
-  ]);
+
+  // Derive daily goals from user's real tasks
+  const dailyGoals = tasks.map((t) => ({
+    id: t.id,
+    text: t.title,
+    done: t.status === 'completed',
+  }));
 
   const name = user?.name || user?.personalInformation?.fullName || 'there';
   const firstName = name.split(' ')[0];
@@ -63,7 +69,7 @@ export default function DashboardPage() {
   const completedTasks = tasks.filter((t) => t.status === 'completed').length;
   const totalTasks = tasks.length;
   const completedGoals = dailyGoals.filter((g) => g.done).length;
-  const goalProgress = Math.round((completedGoals / dailyGoals.length) * 100);
+  const goalProgress = dailyGoals.length > 0 ? Math.round((completedGoals / dailyGoals.length) * 100) : 0;
 
   const upcomingReminders = reminders
     .filter((r) => r.status === 'pending')
@@ -106,8 +112,8 @@ export default function DashboardPage() {
     <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Hero greeting */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(220,38,38,0.08), rgba(220,38,38,0.03))',
-        border: '1px solid rgba(220,38,38,0.15)',
+        background: 'linear-gradient(135deg, var(--athena-accent-soft), transparent)',
+        border: '1px solid var(--athena-accent-border)',
         borderRadius: 20, padding: '24px 28px',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
       }}>
@@ -116,12 +122,14 @@ export default function DashboardPage() {
             {new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
           <h1 style={{ color: '#f1f5f9', fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em', marginBottom: 6 }}>
-            Hello, <span style={{ color: '#dc2626' }}>{firstName}</span> 👋
+            Hello, <span style={{ color: 'var(--athena-accent-light)' }}>{firstName}</span> 👋
           </h1>
           <p style={{ color: '#64748b', fontSize: 14 }}>
-            {completedGoals === dailyGoals.length
-              ? "All goals done today — outstanding! 🎉"
-              : `${completedGoals}/${dailyGoals.length} goals done · ${dailyGoals.length - completedGoals} remaining`}
+            {dailyGoals.length === 0
+              ? "No goals for today"
+              : completedGoals === dailyGoals.length
+                ? "All goals done today — outstanding! 🎉"
+                : `${completedGoals}/${dailyGoals.length} goals done · ${dailyGoals.length - completedGoals} remaining`}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -132,7 +140,7 @@ export default function DashboardPage() {
             onClick={() => navigate('/safety')}
             style={{
               background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
-              borderRadius: 10, padding: '10px 18px', cursor: 'pointer', color: '#dc2626',
+              borderRadius: 10, padding: '10px 18px', cursor: 'pointer', color: '#f87171',
               display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 700,
             }}
             className="sos-pulse"
@@ -156,25 +164,34 @@ export default function DashboardPage() {
         <div className="glass-card" style={{ padding: 22 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <h2 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 700 }}>Today's Goals</h2>
-            <span style={{ color: '#dc2626', fontSize: 14, fontWeight: 800 }}>{goalProgress}%</span>
+            <span style={{ color: 'var(--athena-accent)', fontSize: 14, fontWeight: 800 }}>{goalProgress}%</span>
           </div>
           <ProgressBar value={goalProgress} showLabel={false} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
-            {dailyGoals.map((g, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                  background: g.done ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
-                  border: `2px solid ${g.done ? '#4ade80' : 'rgba(255,255,255,0.15)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {g.done && <span style={{ color: '#4ade80', fontSize: 10, fontWeight: 700 }}>✓</span>}
+          {dailyGoals.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+              <p style={{ color: '#64748b', fontSize: 13, marginBottom: 10 }}>No goals for today</p>
+              <button onClick={() => navigate('/tasks')} className="athena-btn-secondary" style={{ fontSize: 12, padding: '6px 14px' }}>
+                Add a task
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+              {dailyGoals.map((g) => (
+                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 20, height: 20, borderRadius: 6, flexShrink: 0,
+                    background: g.done ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
+                    border: `2px solid ${g.done ? '#4ade80' : 'rgba(255,255,255,0.15)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {g.done && <span style={{ color: '#4ade80', fontSize: 10, fontWeight: 700 }}>✓</span>}
+                  </div>
+                  <span style={{ color: g.done ? '#64748b' : '#f1f5f9', fontSize: 13, textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span>
                 </div>
-                <span style={{ color: g.done ? '#64748b' : '#f1f5f9', fontSize: 13, textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span>
-              </div>
-            ))}
-          </div>
-          {completedGoals === dailyGoals.length && (
+              ))}
+            </div>
+          )}
+          {dailyGoals.length > 0 && completedGoals === dailyGoals.length && (
             <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', textAlign: 'center' }}>
               <p style={{ color: '#4ade80', fontSize: 13, fontWeight: 600 }}>🎉 All goals completed! +50 points earned</p>
             </div>
@@ -185,12 +202,17 @@ export default function DashboardPage() {
         <div className="glass-card" style={{ padding: 22 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <h2 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 700 }}>Upcoming Reminders</h2>
-            <button onClick={() => navigate('/reminders')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button onClick={() => navigate('/reminders')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--athena-accent)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
               View all <ChevronRight size={13} />
             </button>
           </div>
           {upcomingReminders.length === 0 ? (
-            <p style={{ color: '#475569', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>No upcoming reminders.</p>
+            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+              <p style={{ color: '#64748b', fontSize: 13, marginBottom: 10 }}>No reminders yet</p>
+              <button onClick={() => navigate('/reminders')} className="athena-btn-secondary" style={{ fontSize: 12, padding: '6px 14px' }}>
+                Set a reminder
+              </button>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {upcomingReminders.map((r) => {
@@ -213,23 +235,23 @@ export default function DashboardPage() {
       {/* ATHENA insight + mood */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
         {/* AI Insight */}
-        <div className="glass-card" style={{ padding: 22, background: 'linear-gradient(135deg, rgba(220,38,38,0.06), rgba(220,38,38,0.02))' }}>
+        <div className="glass-card" style={{ padding: 22, background: 'linear-gradient(135deg, var(--athena-accent-soft), transparent)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(220,38,38,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Brain size={16} color="#dc2626" />
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--athena-accent-soft)', border: '1px solid var(--athena-accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Brain size={16} color="var(--athena-accent)" />
             </div>
             <h2 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 700 }}>ATHENA Insight</h2>
           </div>
           {insights.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {insights.slice(0, 2).map((ins, i) => (
-                <p key={i} style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.7, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, borderLeft: '3px solid rgba(220,38,38,0.4)' }}>
+                <p key={i} style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.7, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, borderLeft: '3px solid var(--athena-accent)' }}>
                   {ins}
                 </p>
               ))}
             </div>
           ) : (
-            <p style={{ color: '#475569', fontSize: 13 }}>ATHENA is learning about your patterns. Check back soon!</p>
+            <p style={{ color: '#64748b', fontSize: 13, padding: '16px 0' }}>No insights yet. ATHENA is learning about your patterns.</p>
           )}
           <button onClick={() => navigate('/behavior')} className="athena-btn-secondary" style={{ marginTop: 14, fontSize: 12, padding: '7px 14px' }}>
             View My Twin <ChevronRight size={13} />

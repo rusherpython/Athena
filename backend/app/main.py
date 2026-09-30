@@ -8,6 +8,8 @@ from app.routers.safety import router as safety_router
 from app.routers.lifestyle import router as lifestyle_router
 from app.routers.reminders import router as reminders_router
 from app.routers.profile import router as profile_router, profile_alias_router
+from app.routers.memory import router as memory_router
+from app.routers.rewards import router as rewards_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -32,13 +34,24 @@ app.include_router(profile_router)
 app.include_router(profile_router, prefix="/api")
 app.include_router(profile_alias_router)
 app.include_router(profile_alias_router, prefix="/api")
+app.include_router(memory_router)
+app.include_router(memory_router, prefix="/api")
+app.include_router(rewards_router)
+app.include_router(rewards_router, prefix="/api")
 app.include_router(chat.router)
+app.include_router(chat.router, prefix="/api")
 app.include_router(tasks_router)
+app.include_router(tasks_router, prefix="/api")
 app.include_router(behavior_router)
+app.include_router(behavior_router, prefix="/api")
 app.include_router(wellness_router)
+app.include_router(wellness_router, prefix="/api")
 app.include_router(safety_router)
+app.include_router(safety_router, prefix="/api")
 app.include_router(lifestyle_router)
+app.include_router(lifestyle_router, prefix="/api")
 app.include_router(reminders_router)
+app.include_router(reminders_router, prefix="/api")
 
 
 @app.get("/health")

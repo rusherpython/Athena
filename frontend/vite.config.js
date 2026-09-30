@@ -40,6 +40,16 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/memory': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/rewards': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
       '/wellness': {
         target: 'http://localhost:8000',
         changeOrigin: true,

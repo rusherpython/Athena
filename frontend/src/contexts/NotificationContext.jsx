@@ -6,24 +6,7 @@ let idCounter = 0;
 
 export function NotificationProvider({ children }) {
   const [toasts, setToasts] = useState([]);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 'n1',
-      title: 'Good morning! 🌅',
-      message: "Here are your priorities for today.",
-      type: 'info',
-      read: false,
-      timestamp: new Date().toISOString(),
-    },
-    {
-      id: 'n2',
-      title: 'Assignment due tomorrow',
-      message: 'Your AI Assignment is due tomorrow.',
-      type: 'warning',
-      read: false,
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const addToast = useCallback(({ title, message, type = 'info', duration = 4000 }) => {
     const id = `toast-${++idCounter}`;
