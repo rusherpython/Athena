@@ -148,11 +148,15 @@ export default function LandingPage() {
             {/* With large elegant typography, white/lavender gradient,      */}
             {/* subtle pink glow, and soft depth shadow                      */}
             {/* ============================================================ */}
-            <div className="w-full flex items-center justify-center pb-2 pointer-events-none select-none">
+            <div
+              className="w-full flex items-center justify-center pb-12 sm:pb-16 md:pb-20 pointer-events-none select-none overflow-visible"
+              style={{ transform: 'translate3d(0, -70px, 0)' }}
+            >
               <span
-                className="w-[90vw] text-center font-serif font-light uppercase tracking-[0.18em] text-[12vw] leading-none bg-gradient-to-b from-white via-[#f5d0fe] to-[#c084fc] bg-clip-text text-transparent"
+                className="w-[90vw] text-center font-serif font-light uppercase tracking-[0.18em] text-[12vw] leading-none bg-gradient-to-b from-white via-[#f5d0fe] to-[#c084fc] bg-clip-text text-transparent inline-block overflow-visible"
                 style={{
-                  filter: 'drop-shadow(0 0 35px rgba(244, 114, 182, 0.35)) drop-shadow(0 15px 30px rgba(0, 0, 0, 0.95))'
+                  filter: 'drop-shadow(0 0 35px rgba(244, 114, 182, 0.35)) drop-shadow(0 15px 30px rgba(0, 0, 0, 0.95))',
+                  paddingBottom: '0.12em',
                 }}
               >
                 ATHENA
