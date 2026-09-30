@@ -7,7 +7,7 @@ export default function LogoMarqueeSection() {
     { name: 'Apple Health', icon: HeartPulse, label: 'Wellness Metrics' },
     { name: 'Spotify Music', icon: Music, label: 'Lifestyle Vibes' },
     { name: 'Todoist', icon: CheckSquare, label: 'Task Execution' },
-    { name: 'Slack Workplace', icon: MessageSquare, label: 'Work Context' },
+    { name: 'Slack Workspace', icon: MessageSquare, label: 'Work Context' },
     { name: 'Smart Reminders', icon: Clock, label: 'Adaptive Alerts' },
   ];
 
@@ -21,8 +21,70 @@ export default function LogoMarqueeSection() {
     { name: 'Lifestyle Journal', icon: Database, label: 'Daily Reflection' },
   ];
 
+  const renderCardList = (list, prefix) => (
+    [...list, ...list].map((item, i) => {
+      const Icon = item.icon;
+      return (
+        <div
+          key={`${prefix}-${i}`}
+          className="flex items-center gap-3.5 px-6 py-3.5 rounded-2xl bg-[#0f0c18]/80 border border-white/8 hover:border-purple-500/40 backdrop-blur-md transition-all duration-300 group/card hover:bg-[#161224] shrink-0 cursor-default"
+        >
+          <div className="w-8 h-8 rounded-xl bg-purple-950/60 border border-purple-500/20 flex items-center justify-center text-purple-300 group-hover/card:text-purple-200 group-hover/card:scale-105 transition-transform">
+            <Icon className="w-4 h-4" />
+          </div>
+          <div className="flex flex-col text-left">
+            <span className="text-xs sm:text-sm font-medium text-neutral-200 group-hover/card:text-white transition-colors tracking-tight whitespace-nowrap">
+              {item.name}
+            </span>
+            <span className="text-[10px] text-neutral-500 tracking-wider uppercase whitespace-nowrap">
+              {item.label}
+            </span>
+          </div>
+        </div>
+      );
+    })
+  );
+
   return (
     <section className="relative w-full py-16 sm:py-20 bg-[#06040a] overflow-hidden border-t border-b border-purple-500/10">
+      {/* Self-contained CSS keyframes for continuous infinite marquee with GPU acceleration */}
+      <style>{`
+        @keyframes marqueeScrollLeft {
+          0% {
+            transform: translate3d(0, 0, 0);
+          }
+          100% {
+            transform: translate3d(-100%, 0, 0);
+          }
+        }
+        @keyframes marqueeScrollRight {
+          0% {
+            transform: translate3d(-100%, 0, 0);
+          }
+          100% {
+            transform: translate3d(0, 0, 0);
+          }
+        }
+        .athena-marquee-track-left {
+          display: flex;
+          flex-shrink: 0;
+          align-items: center;
+          will-change: transform;
+          animation: marqueeScrollLeft 35s linear infinite;
+        }
+        .athena-marquee-track-right {
+          display: flex;
+          flex-shrink: 0;
+          align-items: center;
+          will-change: transform;
+          animation: marqueeScrollRight 35s linear infinite;
+        }
+        .athena-marquee-row:hover .athena-marquee-track-left,
+        .athena-marquee-row:hover .athena-marquee-track-right {
+          animation-play-state: paused;
+        }
+      `}</style>
+
       {/* Background radial glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[250px] bg-purple-900/15 blur-[120px] rounded-full" />
@@ -40,63 +102,29 @@ export default function LogoMarqueeSection() {
 
       {/* Marquee Wrapper with horizontal mask fade at edges */}
       <div
-        className="relative w-full flex flex-col gap-6"
+        className="relative w-full flex flex-col gap-6 overflow-hidden"
         style={{
-          maskImage: 'linear-gradient(to right, transparent, black 12%, black 88%, transparent)',
-          WebkitMaskImage: 'linear-gradient(to right, transparent, black 12%, black 88%, transparent)'
+          maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
         }}
       >
         {/* ROW 1: Moves right → left continuously */}
-        <div className="flex overflow-hidden select-none py-1">
-          <div className="animate-marquee-left flex items-center gap-6 pr-6">
-            {[...rowOneIntegrations, ...rowOneIntegrations].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={`r1-${i}`}
-                  className="flex items-center gap-3.5 px-6 py-3.5 rounded-2xl bg-[#0f0c18]/80 border border-white/8 hover:border-purple-500/40 backdrop-blur-md transition-all duration-300 group hover:bg-[#161224]"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-purple-950/60 border border-purple-500/20 flex items-center justify-center text-purple-300 group-hover:text-purple-200 group-hover:scale-105 transition-transform">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs sm:text-sm font-medium text-neutral-200 group-hover:text-white transition-colors tracking-tight">
-                      {item.name}
-                    </span>
-                    <span className="text-[10px] text-neutral-500 tracking-wider uppercase">
-                      {item.label}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+        <div className="athena-marquee-row group flex overflow-hidden select-none py-1 w-full">
+          <div className="athena-marquee-track-left gap-6 pr-6">
+            {renderCardList(rowOneIntegrations, 'r1-a')}
+          </div>
+          <div className="athena-marquee-track-left gap-6 pr-6" aria-hidden="true">
+            {renderCardList(rowOneIntegrations, 'r1-b')}
           </div>
         </div>
 
         {/* ROW 2: Moves left → right continuously */}
-        <div className="flex overflow-hidden select-none py-1">
-          <div className="animate-marquee-right flex items-center gap-6 pr-6">
-            {[...rowTwoIntegrations, ...rowTwoIntegrations].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={`r2-${i}`}
-                  className="flex items-center gap-3.5 px-6 py-3.5 rounded-2xl bg-[#0f0c18]/80 border border-white/8 hover:border-purple-500/40 backdrop-blur-md transition-all duration-300 group hover:bg-[#161224]"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-purple-950/60 border border-purple-500/20 flex items-center justify-center text-purple-300 group-hover:text-purple-200 group-hover:scale-105 transition-transform">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs sm:text-sm font-medium text-neutral-200 group-hover:text-white transition-colors tracking-tight">
-                      {item.name}
-                    </span>
-                    <span className="text-[10px] text-neutral-500 tracking-wider uppercase">
-                      {item.label}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+        <div className="athena-marquee-row group flex overflow-hidden select-none py-1 w-full">
+          <div className="athena-marquee-track-right gap-6 pr-6">
+            {renderCardList(rowTwoIntegrations, 'r2-a')}
+          </div>
+          <div className="athena-marquee-track-right gap-6 pr-6" aria-hidden="true">
+            {renderCardList(rowTwoIntegrations, 'r2-b')}
           </div>
         </div>
       </div>
