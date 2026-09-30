@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, login } = useAuth();
   const { addToast } = useNotification();
   const navigate = useNavigate();
 
@@ -34,10 +34,28 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await register(form.name, form.email, form.password);
-      addToast({ title: 'Welcome to ATHENA!', message: "Let's set up your digital twin.", type: 'success' });
+      addToast({ title: 'Welcome to ATHENA!', message: "Let's calibrate your digital twin.", type: 'success' });
       navigate('/onboarding/personal');
     } catch (err) {
-      addToast({ title: 'Registration failed', message: err?.response?.data?.detail || 'Please try again.', type: 'error' });
+      addToast({
+        title: 'Registration notice',
+        message: err.message || err?.response?.data?.detail || 'Please try again.',
+        type: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoSignup = async () => {
+    setLoading(true);
+    try {
+      localStorage.setItem('athena_demo_mode', 'true');
+      await login('demo@athena.ai', 'demo123');
+      addToast({ title: 'Welcome to ATHENA!', message: 'Entering calibration in Demo Mode.', type: 'success' });
+      navigate('/onboarding/personal');
+    } catch (err) {
+      addToast({ title: 'Demo error', message: err.message, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -58,7 +76,7 @@ export default function SignupPage() {
             backgroundImage: `radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0,0,0,0)),
                               radial-gradient(1px 1px at 80px 100px, rgba(216,180,254,0.7), rgba(0,0,0,0)),
                               radial-gradient(1.5px 1.5px at 150px 70px, #ffffff, rgba(0,0,0,0))`,
-            backgroundSize: '240px 240px'
+            backgroundSize: '240px 240px',
           }}
         />
       </div>
@@ -102,7 +120,7 @@ export default function SignupPage() {
         </div>
 
         {/* Right Column: Sign Up Glass Card */}
-        <div className="mx-auto w-full max-w-[430px] lg:col-span-6">
+        <div className="mx-auto w-full max-w-[440px] lg:col-span-6">
           <div className="mb-6 text-center lg:hidden">
             <Link to="/" className="text-xl font-medium tracking-[0.25em] text-white uppercase inline-block mb-2">
               ATHENA
@@ -119,7 +137,7 @@ export default function SignupPage() {
               <p className="mt-1 text-xs text-neutral-400 font-light">Set up your evolving AI life assistant</p>
             </div>
 
-            <form onSubmit={handleSignup} className="flex flex-col gap-3.5">
+            <form onSubmit={handleSignup} className="flex flex-col gap-3">
               {[
                 { id: 'name', label: 'Full name', type: 'text', field: 'name', icon: User, placeholder: 'Your name', auto: 'name' },
                 { id: 'email', label: 'Email address', type: 'email', field: 'email', icon: Mail, placeholder: 'you@example.com', auto: 'email' },
@@ -127,7 +145,7 @@ export default function SignupPage() {
                 { id: 'confirm', label: 'Confirm password', type: showPass ? 'text' : 'password', field: 'confirmPassword', icon: Lock, placeholder: 'Repeat password', auto: 'new-password' },
               ].map(({ id, label, type, field, icon: Icon, placeholder, auto }) => (
                 <div key={id}>
-                  <label className="block text-[11px] font-semibold tracking-wider text-purple-200 uppercase mb-1.5" htmlFor={id}>
+                  <label className="block text-[11px] font-semibold tracking-wider text-purple-200 uppercase mb-1" htmlFor={id}>
                     {label}
                   </label>
                   <div className="relative">
@@ -138,7 +156,7 @@ export default function SignupPage() {
                       value={form[field]}
                       onChange={set(field)}
                       placeholder={placeholder}
-                      className="w-full bg-[#151024]/80 border border-purple-500/25 focus:border-purple-400 rounded-xl px-4 py-2.5 pl-10 pr-10 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
+                      className="w-full bg-[#151024]/80 border border-purple-500/25 focus:border-purple-400 rounded-xl px-4 py-2 pl-10 pr-10 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"
                       autoComplete={auto}
                     />
                     {field === 'confirmPassword' && (
@@ -163,7 +181,19 @@ export default function SignupPage() {
               </button>
             </form>
 
-            <p className="mt-5 text-center text-xs text-neutral-400">
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={handleDemoSignup}
+                disabled={loading}
+                className="w-full inline-flex items-center justify-center gap-2 py-2 px-4 rounded-full bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/30 text-xs font-medium text-purple-200 transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <span>Instant Demo Onboarding (No Setup)</span>
+              </button>
+            </div>
+
+            <p className="mt-4 text-center text-xs text-neutral-400">
               Already have a twin?{' '}
               <Link to="/login" className="font-semibold text-purple-300 hover:text-purple-200 transition-colors">
                 Sign in

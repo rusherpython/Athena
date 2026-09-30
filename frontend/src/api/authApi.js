@@ -1,4 +1,4 @@
-import apiClient, { DEMO_MODE } from './apiClient';
+import apiClient, { DEMO_MODE, getBaseUrl } from './apiClient';
 import { API_ENDPOINTS } from './endpoints';
 import { mockUser } from './mockData';
 
@@ -7,47 +7,86 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 export const authApi = {
   async login(email, password) {
     if (DEMO_MODE) {
-      await delay(800);
+      await delay(600);
       const token = 'demo-token-' + Date.now();
-      return { token, user: { ...mockUser, email } };
+      return { token, user: { ...mockUser, email, name: email.split('@')[0] } };
     }
-    const res = await apiClient.post(API_ENDPOINTS.auth.login, { email, password });
-    const token = res.data.access_token || res.data.token;
-    const user = {
-      id: res.data.user_id,
-      email,
-      name: email.split('@')[0],
-      ...(res.data.user || {}),
-    };
-    return { token, user };
+
+    try {
+      const res = await apiClient.post(API_ENDPOINTS.auth.login, { email, password });
+      const token = res.data.access_token || res.data.token;
+      if (!token) {
+        throw new Error('Login succeeded but no access token received from server.');
+      }
+      const user = {
+        id: res.data.user_id,
+        email,
+        name: email.split('@')[0],
+        onboardingComplete: true,
+        ...(res.data.user || {}),
+      };
+      return { token, user };
+    } catch (err) {
+      if (!err.response) {
+        const url = getBaseUrl();
+        throw new Error(
+          `Cannot connect to backend (${url}). If your Render server is waking up from standby, please retry in 30 seconds, or use Demo Mode.`
+        );
+      }
+      const detail = err.response?.data?.detail || err.response?.data?.message;
+      if (typeof detail === 'string' && (detail.toLowerCase().includes('confirm') || detail.toLowerCase().includes('verify'))) {
+        throw new Error('Supabase email confirmation is enabled. Please confirm your email via your inbox, or disable email verification in Supabase dashboard.');
+      }
+      throw new Error(detail || 'Invalid email or password.');
+    }
   },
 
   async register(name, email, password) {
     if (DEMO_MODE) {
-      await delay(800);
+      await delay(600);
       const token = 'demo-token-' + Date.now();
       return { token, user: { ...mockUser, name, email, onboardingComplete: false } };
     }
-    const res = await apiClient.post(API_ENDPOINTS.auth.register, { name, email, password });
-    if (res.data.access_token) {
+
+    let res;
+    try {
+      res = await apiClient.post(API_ENDPOINTS.auth.register, { name, email, password });
+    } catch (err) {
+      if (!err.response) {
+        const url = getBaseUrl();
+        throw new Error(
+          `Cannot connect to backend (${url}). Ensure your Render backend is running, or use Demo Mode.`
+        );
+      }
+      const detail = err.response?.data?.detail || err.response?.data?.message;
+      throw new Error(detail || 'Registration failed. Please try a different email or password.');
+    }
+
+    // If server provided access_token immediately
+    if (res.data?.access_token) {
       return {
         token: res.data.access_token,
-        user: { id: res.data.user_id, email, name },
+        user: { id: res.data.user_id, email, name, onboardingComplete: false },
       };
     }
-    // Attempt automatic login after registration
+
+    // Otherwise attempt automatic login with the new credentials
     try {
       const loginRes = await apiClient.post(API_ENDPOINTS.auth.login, { email, password });
       return {
         token: loginRes.data.access_token,
-        user: { id: loginRes.data.user_id, email, name },
+        user: { id: loginRes.data.user_id, email, name, onboardingComplete: false },
       };
-    } catch {
-      return {
-        token: null,
-        user: { id: res.data.user_id, email, name },
-        message: res.data.message,
-      };
+    } catch (loginErr) {
+      const detail = loginErr?.response?.data?.detail || '';
+      if (detail.toLowerCase().includes('confirm') || detail.toLowerCase().includes('verify')) {
+        throw new Error(
+          'Account created! Supabase requires email verification. Check your email or disable confirmation in Supabase Authentication settings.'
+        );
+      }
+      throw new Error(
+        detail || 'Account registered! Please sign in with your email and password.'
+      );
     }
   },
 

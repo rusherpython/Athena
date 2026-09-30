@@ -27,7 +27,9 @@ def register(data: RegisterRequest):
 
     return {
         "message": "Registration successful",
-        "user_id": response.user.id
+        "user_id": response.user.id,
+        "access_token": response.session.access_token if response.session else None,
+        "refresh_token": response.session.refresh_token if response.session else None
     }
 
 

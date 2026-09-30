@@ -1,19 +1,32 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-export const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+// Get base URL from env, or localStorage override, or default to localhost for local dev
+export const getBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const customUrl = localStorage.getItem('athena_api_url');
+    if (customUrl) return customUrl.trim().replace(/\/$/, '');
+  }
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) return envUrl.trim().replace(/\/$/, '');
+  return 'http://localhost:8000';
+};
+
+export const DEMO_MODE =
+  import.meta.env.VITE_DEMO_MODE === 'true' ||
+  (typeof window !== 'undefined' && localStorage.getItem('athena_demo_mode') === 'true');
 
 const apiClient = axios.create({
-  baseURL: BASE_URL,
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000,
+  timeout: 45000, // 45s to accommodate Render free-tier cold starts
 });
 
-// Attach auth token to every request
+// Attach current baseURL & auth token to every request
 apiClient.interceptors.request.use(
   (config) => {
+    config.baseURL = getBaseUrl();
     const token = localStorage.getItem('athena_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

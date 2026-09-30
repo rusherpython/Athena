@@ -2,16 +2,20 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
-import { Eye, EyeOff, Brain, Mail, Lock, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Brain, Mail, Lock, ArrowRight, Sparkles, ShieldCheck, Server, Settings2, X, Check } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import DemoBanner from '../components/ui/DemoBanner';
 import ToastContainer from '../components/notifications/ToastContainer';
+import { getBaseUrl } from '../api/apiClient';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showServerConfig, setShowServerConfig] = useState(false);
+  const [customServerUrl, setCustomServerUrl] = useState(() => localStorage.getItem('athena_api_url') || '');
+
   const { login } = useAuth();
   const { addToast } = useNotification();
   const navigate = useNavigate();
@@ -32,10 +36,40 @@ export default function LoginPage() {
         navigate('/onboarding/personal');
       }
     } catch (err) {
-      addToast({ title: 'Login failed', message: err?.response?.data?.detail || 'Check your credentials and try again.', type: 'error' });
+      addToast({
+        title: 'Authentication notice',
+        message: err.message || err?.response?.data?.detail || 'Invalid email or password.',
+        type: 'error',
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    try {
+      localStorage.setItem('athena_demo_mode', 'true');
+      const user = await login('demo@athena.ai', 'demo123');
+      addToast({ title: 'Welcome to ATHENA!', message: 'Signed in via Demo Digital Twin.', type: 'success' });
+      navigate('/dashboard');
+    } catch (err) {
+      addToast({ title: 'Demo error', message: err.message, type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveServerUrl = () => {
+    if (customServerUrl.trim()) {
+      localStorage.setItem('athena_api_url', customServerUrl.trim());
+      localStorage.removeItem('athena_demo_mode');
+      addToast({ title: 'Backend Connected', message: `Server URL set to ${customServerUrl.trim()}`, type: 'success' });
+    } else {
+      localStorage.removeItem('athena_api_url');
+      addToast({ title: 'Default Server', message: 'Reset to default backend configuration.', type: 'info' });
+    }
+    setShowServerConfig(false);
   };
 
   return (
@@ -53,7 +87,7 @@ export default function LoginPage() {
             backgroundImage: `radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0,0,0,0)),
                               radial-gradient(1px 1px at 80px 100px, rgba(216,180,254,0.7), rgba(0,0,0,0)),
                               radial-gradient(1.5px 1.5px at 150px 70px, #ffffff, rgba(0,0,0,0))`,
-            backgroundSize: '240px 240px'
+            backgroundSize: '240px 240px',
           }}
         />
       </div>
@@ -109,7 +143,7 @@ export default function LoginPage() {
         </div>
 
         {/* Right Column: Sign In Glass Card */}
-        <div className="mx-auto w-full max-w-[430px] lg:col-span-6">
+        <div className="mx-auto w-full max-w-[440px] lg:col-span-6">
           <div className="mb-6 text-center lg:hidden">
             <Link to="/" className="text-xl font-medium tracking-[0.25em] text-white uppercase inline-block mb-2">
               ATHENA
@@ -170,22 +204,29 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="text-right">
-                <button type="button" className="border-0 bg-transparent text-xs text-purple-300 hover:text-purple-200 transition-colors">
-                  Forgot password?
-                </button>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-gradient-to-r from-purple-600 via-violet-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-medium text-sm transition-all duration-200 shadow-[0_0_25px_rgba(168,85,247,0.35)] cursor-pointer disabled:opacity-50"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-gradient-to-r from-purple-600 via-violet-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-medium text-sm transition-all duration-200 shadow-[0_0_25px_rgba(168,85,247,0.35)] cursor-pointer disabled:opacity-50 mt-1"
               >
                 {loading ? <LoadingSpinner size={18} /> : <><span>Launch Twin</span><ArrowRight size={16} /></>}
               </button>
             </form>
 
-            <div className="my-6 flex items-center gap-3">
+            {/* 1-Click Instant Demo Access */}
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={loading}
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/30 text-xs font-medium text-purple-200 transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <span>Instant Demo Twin Access (No Wait)</span>
+              </button>
+            </div>
+
+            <div className="my-5 flex items-center gap-3">
               <div className="h-px flex-1 bg-white/10" />
               <span className="text-xs text-neutral-500">or</span>
               <div className="h-px flex-1 bg-white/10" />
@@ -193,13 +234,62 @@ export default function LoginPage() {
 
             <Link
               to="/signup"
-              className="w-full inline-flex items-center justify-center py-2.5 px-6 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-medium text-neutral-200 transition-all"
+              className="w-full inline-flex items-center justify-center py-2.5 px-6 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-medium text-neutral-200 transition-all mb-4"
             >
               Create New Twin Account
             </Link>
+
+            {/* Backend Server Configuration Toggle */}
+            <div className="pt-2 border-t border-white/8 flex items-center justify-between text-[11px] text-neutral-400 font-mono">
+              <span className="truncate max-w-[200px]">Server: {getBaseUrl()}</span>
+              <button
+                type="button"
+                onClick={() => setShowServerConfig(!showServerConfig)}
+                className="inline-flex items-center gap-1 text-purple-300 hover:text-purple-200 underline underline-offset-2 transition-colors cursor-pointer"
+              >
+                <Server className="w-3 h-3" />
+                <span>Change URL</span>
+              </button>
+            </div>
+
+            {/* In-line Server Config Drawer */}
+            {showServerConfig && (
+              <div className="mt-3 p-3.5 rounded-2xl bg-black/70 border border-purple-500/30 animate-fade-in text-left">
+                <span className="block text-[11px] font-semibold text-purple-200 mb-1">
+                  Render / Backend API Base URL
+                </span>
+                <p className="text-[10px] text-neutral-400 mb-2 leading-tight">
+                  Enter your live Render backend URL (e.g. https://athena-backend.onrender.com).
+                </p>
+                <input
+                  type="text"
+                  value={customServerUrl}
+                  onChange={(e) => setCustomServerUrl(e.target.value)}
+                  placeholder="https://your-backend.onrender.com"
+                  className="w-full bg-[#151024] border border-purple-500/30 rounded-lg px-3 py-1.5 text-xs text-white placeholder-neutral-600 focus:outline-none mb-2 font-mono"
+                />
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowServerConfig(false)}
+                    className="px-2.5 py-1 text-[11px] text-neutral-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveServerUrl}
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-medium transition-colors"
+                  >
+                    <Check className="w-3 h-3" />
+                    <span>Save Server URL</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          <p className="mt-6 text-center text-xs text-neutral-500">ATHENA — HumanTwin AI · GATEWAYS 2026</p>
+          <p className="mt-5 text-center text-xs text-neutral-500">ATHENA — HumanTwin AI · GATEWAYS 2026</p>
         </div>
       </div>
     </div>
