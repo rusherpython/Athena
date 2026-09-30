@@ -8,7 +8,7 @@ export const getBaseUrl = () => {
   }
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   if (envUrl) return envUrl.trim().replace(/\/$/, '');
-  return 'http://localhost:8000';
+  return 'https://athena-fv3w.onrender.com';
 };
 
 export const DEMO_MODE =
